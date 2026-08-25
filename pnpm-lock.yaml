@@ -32,6 +32,9 @@ importers:
       drizzle-orm:
         specifier: ^0.45.2
         version: 0.45.2(@neondatabase/serverless@1.1.0)
+      hono:
+        specifier: ^4.13.3
+        version: 4.13.3
       nitro:
         specifier: 3.0.260610-beta
         version: 3.0.260610-beta(chokidar@5.0.0)(drizzle-orm@0.45.2(@neondatabase/serverless@1.1.0))(jiti@2.7.0)(vite@8.2.2(@types/node@22.20.1)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.12))
@@ -44,6 +47,9 @@ importers:
       tailwindcss:
         specifier: ^4.1.18
         version: 4.3.3
+      zod:
+        specifier: ^4.4.3
+        version: 4.4.3
     devDependencies:
       '@biomejs/biome':
         specifier: ^2.5.10
@@ -1700,6 +1706,10 @@ packages:
     peerDependenciesMeta:
       crossws:
         optional: true
+
+  hono@4.13.3:
+    resolution: {integrity: sha512-r8AO2mYHoLxSHkgafNeC/BXyb2vWRxD3jem4Ts+ptav8oTG5FIRifAjuJEmZI4bSvvc2ns0GxmIYiZnHqN3mMw==}
+    engines: {node: '>=16.9.0'}
 
   hookable@6.1.1:
     resolution: {integrity: sha512-U9LYDy1CwhMCnprUfeAZWZGByVbhd54hwepegYTK7Pi5NvqEj63ifz5z+xukznehT7i6NIZRu89Ay1AZmRsLEQ==}
@@ -3609,6 +3619,8 @@ snapshots:
       srvx: 0.11.22
     optionalDependencies:
       crossws: 0.4.12(srvx@0.11.22)
+
+  hono@4.13.3: {}
 
   hookable@6.1.1: {}
 

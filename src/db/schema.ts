@@ -32,6 +32,8 @@ export const equipmentEnum = pgEnum("equipment", [
 
 export const unitEnum = pgEnum("unit", ["kg", "lb"]);
 
+export const roleEnum = pgEnum("role", ["user", "admin"]);
+
 export const workoutStatusEnum = pgEnum("workout_status", [
   "in_progress",
   "completed",
@@ -43,6 +45,7 @@ export const users = pgTable("users", {
   name: text("name").notNull(),
   email: text("email").notNull().unique(),
   preferredUnit: unitEnum("preferred_unit").default("kg").notNull(),
+  role: roleEnum("role").default("user").notNull(),
   heightCm: integer("height_cm"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });

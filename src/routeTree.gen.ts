@@ -10,12 +10,60 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AdminRouteImport } from './routes/admin'
+import { Route as AdminIndexRouteImport } from './routes/admin/index'
+import { Route as AdminBodyWeightsRouteImport } from './routes/admin/body-weights'
+import { Route as AdminExercisesRouteImport } from './routes/admin/exercises'
+import { Route as AdminSplitsRouteImport } from './routes/admin/splits'
+import { Route as AdminUsersRouteImport } from './routes/admin/users'
+import { Route as AdminWorkoutsRouteImport } from './routes/admin/workouts'
+import { Route as ApiSplatRouteImport } from './routes/api.$'
 import { Route as SignInSplatRouteImport } from './routes/sign-in.$'
 import { Route as SignUpSplatRouteImport } from './routes/sign-up.$'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminIndexRoute = AdminIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminBodyWeightsRoute = AdminBodyWeightsRouteImport.update({
+  id: '/body-weights',
+  path: '/body-weights',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminExercisesRoute = AdminExercisesRouteImport.update({
+  id: '/exercises',
+  path: '/exercises',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminSplitsRoute = AdminSplitsRouteImport.update({
+  id: '/splits',
+  path: '/splits',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminUsersRoute = AdminUsersRouteImport.update({
+  id: '/users',
+  path: '/users',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminWorkoutsRoute = AdminWorkoutsRouteImport.update({
+  id: '/workouts',
+  path: '/workouts',
+  getParentRoute: () => AdminRoute,
+} as any)
+const ApiSplatRoute = ApiSplatRouteImport.update({
+  id: '/api/$',
+  path: '/api/$',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SignInSplatRoute = SignInSplatRouteImport.update({
@@ -31,30 +79,88 @@ const SignUpSplatRoute = SignUpSplatRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRouteWithChildren
+  '/admin/body-weights': typeof AdminBodyWeightsRoute
+  '/admin/exercises': typeof AdminExercisesRoute
+  '/admin/splits': typeof AdminSplitsRoute
+  '/admin/users': typeof AdminUsersRoute
+  '/admin/workouts': typeof AdminWorkoutsRoute
+  '/api/$': typeof ApiSplatRoute
   '/sign-in/$': typeof SignInSplatRoute
   '/sign-up/$': typeof SignUpSplatRoute
+  '/admin/': typeof AdminIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/admin/body-weights': typeof AdminBodyWeightsRoute
+  '/admin/exercises': typeof AdminExercisesRoute
+  '/admin/splits': typeof AdminSplitsRoute
+  '/admin/users': typeof AdminUsersRoute
+  '/admin/workouts': typeof AdminWorkoutsRoute
+  '/api/$': typeof ApiSplatRoute
   '/sign-in/$': typeof SignInSplatRoute
   '/sign-up/$': typeof SignUpSplatRoute
+  '/admin': typeof AdminIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/admin': typeof AdminRouteWithChildren
+  '/admin/body-weights': typeof AdminBodyWeightsRoute
+  '/admin/exercises': typeof AdminExercisesRoute
+  '/admin/splits': typeof AdminSplitsRoute
+  '/admin/users': typeof AdminUsersRoute
+  '/admin/workouts': typeof AdminWorkoutsRoute
+  '/api/$': typeof ApiSplatRoute
   '/sign-in/$': typeof SignInSplatRoute
   '/sign-up/$': typeof SignUpSplatRoute
+  '/admin/': typeof AdminIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/sign-in/$' | '/sign-up/$'
+  fullPaths:
+    | '/'
+    | '/admin'
+    | '/admin/body-weights'
+    | '/admin/exercises'
+    | '/admin/splits'
+    | '/admin/users'
+    | '/admin/workouts'
+    | '/api/$'
+    | '/sign-in/$'
+    | '/sign-up/$'
+    | '/admin/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/sign-in/$' | '/sign-up/$'
-  id: '__root__' | '/' | '/sign-in/$' | '/sign-up/$'
+  to:
+    | '/'
+    | '/admin/body-weights'
+    | '/admin/exercises'
+    | '/admin/splits'
+    | '/admin/users'
+    | '/admin/workouts'
+    | '/api/$'
+    | '/sign-in/$'
+    | '/sign-up/$'
+    | '/admin'
+  id:
+    | '__root__'
+    | '/'
+    | '/admin'
+    | '/admin/body-weights'
+    | '/admin/exercises'
+    | '/admin/splits'
+    | '/admin/users'
+    | '/admin/workouts'
+    | '/api/$'
+    | '/sign-in/$'
+    | '/sign-up/$'
+    | '/admin/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AdminRoute: typeof AdminRouteWithChildren
+  ApiSplatRoute: typeof ApiSplatRoute
   SignInSplatRoute: typeof SignInSplatRoute
   SignUpSplatRoute: typeof SignUpSplatRoute
 }
@@ -66,6 +172,62 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/': {
+      id: '/admin/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AdminIndexRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/body-weights': {
+      id: '/admin/body-weights'
+      path: '/body-weights'
+      fullPath: '/admin/body-weights'
+      preLoaderRoute: typeof AdminBodyWeightsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/exercises': {
+      id: '/admin/exercises'
+      path: '/exercises'
+      fullPath: '/admin/exercises'
+      preLoaderRoute: typeof AdminExercisesRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/splits': {
+      id: '/admin/splits'
+      path: '/splits'
+      fullPath: '/admin/splits'
+      preLoaderRoute: typeof AdminSplitsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/users': {
+      id: '/admin/users'
+      path: '/users'
+      fullPath: '/admin/users'
+      preLoaderRoute: typeof AdminUsersRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/workouts': {
+      id: '/admin/workouts'
+      path: '/workouts'
+      fullPath: '/admin/workouts'
+      preLoaderRoute: typeof AdminWorkoutsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/api/$': {
+      id: '/api/$'
+      path: '/api/$'
+      fullPath: '/api/$'
+      preLoaderRoute: typeof ApiSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/sign-in/$': {
@@ -85,8 +247,30 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AdminRouteChildren {
+  AdminBodyWeightsRoute: typeof AdminBodyWeightsRoute
+  AdminExercisesRoute: typeof AdminExercisesRoute
+  AdminSplitsRoute: typeof AdminSplitsRoute
+  AdminUsersRoute: typeof AdminUsersRoute
+  AdminWorkoutsRoute: typeof AdminWorkoutsRoute
+  AdminIndexRoute: typeof AdminIndexRoute
+}
+
+const AdminRouteChildren: AdminRouteChildren = {
+  AdminBodyWeightsRoute: AdminBodyWeightsRoute,
+  AdminExercisesRoute: AdminExercisesRoute,
+  AdminSplitsRoute: AdminSplitsRoute,
+  AdminUsersRoute: AdminUsersRoute,
+  AdminWorkoutsRoute: AdminWorkoutsRoute,
+  AdminIndexRoute: AdminIndexRoute,
+}
+
+const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AdminRoute: AdminRouteWithChildren,
+  ApiSplatRoute: ApiSplatRoute,
   SignInSplatRoute: SignInSplatRoute,
   SignUpSplatRoute: SignUpSplatRoute,
 }
