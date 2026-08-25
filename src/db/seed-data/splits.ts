@@ -657,4 +657,140 @@ export const seedSplits: SeedSplit[] = [
       },
     ],
   },
+  {
+    name: "Arnold Split (3-Day)",
+    description:
+      "Arnold Schwarzenegger's classic split: chest+back, shoulders+arms, legs. Antagonist pairing lets you superset and keep intensity high.",
+    days: [
+      {
+        name: "Chest & Back",
+        exercises: [
+          {
+            exerciseName: "Barbell Bench Press",
+            targetSets: 4,
+            targetRepMin: 6,
+            targetRepMax: 8,
+          },
+          {
+            exerciseName: "Incline Dumbbell Press",
+            targetSets: 3,
+            targetRepMin: 8,
+            targetRepMax: 12,
+          },
+          {
+            exerciseName: "Dumbbell Fly",
+            targetSets: 3,
+            targetRepMin: 10,
+            targetRepMax: 15,
+          },
+          {
+            exerciseName: "Pull-Up",
+            targetSets: 4,
+            targetRepMin: 6,
+            targetRepMax: 12,
+          },
+          {
+            exerciseName: "Barbell Row",
+            targetSets: 4,
+            targetRepMin: 6,
+            targetRepMax: 10,
+          },
+          {
+            exerciseName: "Seated Cable Row",
+            targetSets: 3,
+            targetRepMin: 8,
+            targetRepMax: 12,
+          },
+        ],
+      },
+      {
+        name: "Shoulders & Arms",
+        exercises: [
+          {
+            exerciseName: "Seated Dumbbell Shoulder Press",
+            targetSets: 4,
+            targetRepMin: 6,
+            targetRepMax: 10,
+          },
+          {
+            exerciseName: "Lateral Raise",
+            targetSets: 4,
+            targetRepMin: 12,
+            targetRepMax: 20,
+          },
+          {
+            exerciseName: "Barbell Curl",
+            targetSets: 3,
+            targetRepMin: 8,
+            targetRepMax: 12,
+          },
+          {
+            exerciseName: "Hammer Curl",
+            targetSets: 3,
+            targetRepMin: 10,
+            targetRepMax: 15,
+          },
+          {
+            exerciseName: "Close-Grip Bench Press",
+            targetSets: 3,
+            targetRepMin: 8,
+            targetRepMax: 12,
+          },
+          {
+            exerciseName: "Skull Crusher",
+            targetSets: 3,
+            targetRepMin: 10,
+            targetRepMax: 15,
+          },
+        ],
+      },
+      {
+        name: "Legs",
+        exercises: [
+          {
+            exerciseName: "Back Squat",
+            targetSets: 4,
+            targetRepMin: 6,
+            targetRepMax: 8,
+          },
+          {
+            exerciseName: "Romanian Deadlift",
+            targetSets: 3,
+            targetRepMin: 8,
+            targetRepMax: 12,
+          },
+          {
+            exerciseName: "Leg Press",
+            targetSets: 3,
+            targetRepMin: 10,
+            targetRepMax: 15,
+          },
+          {
+            exerciseName: "Seated Leg Curl",
+            targetSets: 3,
+            targetRepMin: 10,
+            targetRepMax: 15,
+          },
+          {
+            exerciseName: "Leg Extension",
+            targetSets: 3,
+            targetRepMin: 12,
+            targetRepMax: 15,
+          },
+          {
+            exerciseName: "Standing Calf Raise",
+            targetSets: 4,
+            targetRepMin: 10,
+            targetRepMax: 15,
+          },
+          {
+            exerciseName: "Hanging Leg Raise",
+            targetSets: 3,
+            targetRepMin: 10,
+            targetRepMax: 15,
+          },
+        ],
+      },
+    ],
+  },
 ];
