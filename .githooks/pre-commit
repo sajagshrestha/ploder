@@ -1,0 +1,3 @@
+#!/bin/sh
+# Lint and format-check staged files before committing
+pnpm exec biome check --no-errors-on-unmatched --staged
