@@ -17,6 +17,22 @@ import {
 
 import { ThemeToggle } from "@/components/theme";
 import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarHeader,
+  SidebarInset,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarProvider,
+  SidebarTrigger,
+} from "@/components/ui/sidebar";
 import { apiFetch } from "@/lib/api";
 import { cn } from "@/lib/utils";
 
@@ -44,13 +60,99 @@ function useMe(enabled: boolean) {
   });
 }
 
+function AppSidebar({ user }: { user: Me }) {
+  const matches = useMatches();
+  const currentPath = matches.at(-1)?.pathname ?? "/admin";
+
+  return (
+    <Sidebar collapsible="icon">
+      <SidebarHeader>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton size="lg" asChild>
+              <Link to="/admin">
+                <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
+                  <Dumbbell className="size-4" />
+                </div>
+                <div className="grid flex-1 text-left leading-tight">
+                  <span className="truncate font-semibold">Ploder</span>
+                  <span className="truncate text-xs text-muted-foreground">
+                    Admin panel
+                  </span>
+                </div>
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarHeader>
+      <SidebarContent>
+        <SidebarGroup>
+          <SidebarGroupLabel>Manage</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {navItems.map((item) => {
+                const active =
+                  item.to === "/admin"
+                    ? currentPath === "/admin"
+                    : currentPath.startsWith(item.to);
+                return (
+                  <SidebarMenuItem key={item.to}>
+                    <SidebarMenuButton
+                      asChild
+                      isActive={active}
+                      tooltip={item.label}
+                    >
+                      <Link to={item.to}>
+                        <item.icon />
+                        <span>{item.label}</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                );
+              })}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+      </SidebarContent>
+      <SidebarFooter>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <div className="flex items-center gap-2 rounded-md px-2 py-1.5">
+              <UserButton />
+              <div
+                className={cn(
+                  "grid flex-1 leading-tight",
+                  "group-data-[collapsible=icon]:hidden",
+                )}
+              >
+                <span className="truncate text-sm font-medium">
+                  {user.name}
+                </span>
+                <span className="truncate text-xs text-muted-foreground">
+                  {user.email}
+                </span>
+              </div>
+            </div>
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarFooter>
+    </Sidebar>
+  );
+}
+
 function AdminLayout() {
   const { isLoaded, isSignedIn } = useUser();
   const me = useMe(Boolean(isLoaded && isSignedIn));
   const matches = useMatches();
   const currentPath = matches.at(-1)?.pathname ?? "/admin";
+  const activeLabel =
+    navItems.find((item) =>
+      item.to === "/admin"
+        ? currentPath === "/admin"
+        : currentPath.startsWith(item.to),
+    )?.label ?? "Dashboard";
 
-  if (!isLoaded || me.isPending) {
+  if (!isLoaded || (isSignedIn && me.isPending)) {
     return (
       <div className="grid min-h-screen place-items-center">
         <p className="animate-pulse text-sm text-muted-foreground">
@@ -90,86 +192,22 @@ function AdminLayout() {
     );
   }
 
-  const activeLabel =
-    navItems.find((item) => currentPath.startsWith(item.to))?.label ??
-    "Dashboard";
-
   return (
-    <div className="flex min-h-screen">
-      <aside className="sticky top-0 hidden h-screen w-60 shrink-0 flex-col border-r bg-sidebar md:flex">
-        <div className="flex items-center gap-2 px-5 py-5">
-          <div className="flex size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-            <Dumbbell className="size-4" />
-          </div>
-          <div>
-            <p className="text-sm leading-tight font-bold">Ploder</p>
-            <p className="text-xs text-muted-foreground">Admin panel</p>
-          </div>
-        </div>
-        <nav className="flex-1 space-y-1 px-3">
-          {navItems.map((item) => {
-            const active = currentPath.startsWith(item.to);
-            return (
-              <Link
-                key={item.to}
-                to={item.to}
-                className={cn(
-                  "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors",
-                  active
-                    ? "bg-sidebar-accent font-semibold text-sidebar-accent-foreground"
-                    : "text-muted-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground",
-                )}
-              >
-                <item.icon className="size-4" />
-                {item.label}
-              </Link>
-            );
-          })}
-        </nav>
-        <div className="border-t px-5 py-4">
-          <div className="flex items-center gap-3">
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-medium">
-                {me.data.data.name}
-              </p>
-              <p className="truncate text-xs text-muted-foreground">
-                {me.data.data.email}
-              </p>
-            </div>
-            <UserButton />
-          </div>
-        </div>
-      </aside>
-
-      <div className="flex min-w-0 flex-1 flex-col">
-        <header className="sticky top-0 z-10 flex items-center gap-3 border-b bg-background/95 px-4 py-3 backdrop-blur md:px-6">
-          <span className="font-bold md:hidden">Ploder Admin</span>
-          <span className="hidden text-sm font-semibold md:inline">
-            {activeLabel}
-          </span>
-          <span className="ml-auto flex items-center gap-1">
+    <SidebarProvider>
+      <AppSidebar user={me.data.data} />
+      <SidebarInset>
+        <header className="sticky top-0 z-10 flex h-14 shrink-0 items-center gap-2 border-b bg-background/95 px-4 backdrop-blur">
+          <SidebarTrigger className="-ml-1" />
+          <Separator className="mr-2 !h-4" orientation="vertical" />
+          <span className="text-sm font-semibold">{activeLabel}</span>
+          <div className="ml-auto flex items-center gap-1 md:hidden">
             <ThemeToggle />
-            <span className="md:hidden">
-              <UserButton />
-            </span>
-          </span>
-          <nav className="flex items-center gap-1 overflow-x-auto md:hidden">
-            {navItems.map((item) => (
-              <Link
-                key={item.to}
-                to={item.to}
-                activeProps={{ className: "bg-accent text-accent-foreground" }}
-                className="rounded-md p-2 text-muted-foreground hover:bg-accent"
-              >
-                <item.icon className="size-4" />
-              </Link>
-            ))}
-          </nav>
+          </div>
         </header>
         <main className="flex-1 p-4 md:p-6">
           <Outlet />
         </main>
-      </div>
-    </div>
+      </SidebarInset>
+    </SidebarProvider>
   );
 }
