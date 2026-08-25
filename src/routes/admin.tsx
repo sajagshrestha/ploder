@@ -15,6 +15,7 @@ import {
   Users,
 } from "lucide-react";
 
+import { ThemeToggle } from "@/components/theme";
 import { Button } from "@/components/ui/button";
 import { apiFetch } from "@/lib/api";
 import { cn } from "@/lib/utils";
@@ -146,7 +147,13 @@ function AdminLayout() {
           <span className="hidden text-sm font-semibold md:inline">
             {activeLabel}
           </span>
-          <nav className="ml-auto flex items-center gap-1 overflow-x-auto md:hidden">
+          <span className="ml-auto flex items-center gap-1">
+            <ThemeToggle />
+            <span className="md:hidden">
+              <UserButton />
+            </span>
+          </span>
+          <nav className="flex items-center gap-1 overflow-x-auto md:hidden">
             {navItems.map((item) => (
               <Link
                 key={item.to}
@@ -157,7 +164,6 @@ function AdminLayout() {
                 <item.icon className="size-4" />
               </Link>
             ))}
-            <UserButton />
           </nav>
         </header>
         <main className="flex-1 p-4 md:p-6">
