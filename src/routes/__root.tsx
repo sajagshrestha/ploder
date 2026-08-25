@@ -1,5 +1,8 @@
 import { ClerkProvider } from "@clerk/tanstack-react-start";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { createRootRoute, HeadContent, Scripts } from "@tanstack/react-router";
+
+import { Toaster } from "@/components/ui/sonner";
 
 import appCss from "../styles.css?url";
 
@@ -27,6 +30,15 @@ export const Route = createRootRoute({
   shellComponent: RootDocument,
 });
 
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
+
 function RootDocument({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
@@ -34,7 +46,12 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <HeadContent />
       </head>
       <body className="font-sans antialiased">
-        <ClerkProvider>{children}</ClerkProvider>
+        <ClerkProvider>
+          <QueryClientProvider client={queryClient}>
+            {children}
+            <Toaster position="top-right" />
+          </QueryClientProvider>
+        </ClerkProvider>
         <Scripts />
       </body>
     </html>

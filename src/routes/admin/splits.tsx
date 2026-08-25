@@ -1,35 +1,39 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { ChevronDown, ChevronRight, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
 
-import { apiFetch, formatError } from "#/lib/api";
-
-import { useApi } from "../admin";
-
-type SplitDayExercise = {
-  splitDayExerciseId: number;
-  exerciseName: string | null;
-  orderIndex: number;
-  targetSets: number;
-  targetRepMin: number;
-  targetRepMax: number;
-};
-
-type SplitDay = {
-  id: number;
-  name: string;
-  orderIndex: number;
-  exercises: SplitDayExercise[];
-};
-
-type Split = {
-  id: number;
-  name: string;
-  description: string | null;
-  isActive: boolean;
-  days?: SplitDay[];
-};
-
-type Exercise = { id: number; name: string };
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
+import {
+  type SplitDetail,
+  useCreateSplit,
+  useCreateSplitDay,
+  useCreateSplitDayExercise,
+  useDeleteSplit,
+  useDeleteSplitDay,
+  useDeleteSplitDayExercise,
+  useExercises,
+  useSplit,
+  useSplits,
+} from "@/lib/queries";
 
 export const Route = createFileRoute("/admin/splits")({
   component: AdminSplits,
@@ -37,164 +41,143 @@ export const Route = createFileRoute("/admin/splits")({
 
 function AdminSplits() {
   const [expandedId, setExpandedId] = useState<number | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [saving, setSaving] = useState(false);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
 
-  const splits = useApi<{ data: Split[] }>("/api/splits");
-  const exercises = useApi<{ data: Exercise[] }>("/api/exercises?pageSize=100");
-  const [detail, setDetail] = useState<Split | null>(null);
-
-  async function run(action: () => Promise<unknown>) {
-    setSaving(true);
-    setError(null);
-    try {
-      await action();
-      await splits.refetch();
-      if (expandedId !== null) {
-        const response = await apiFetch<{ data: Split }>(
-          `/api/splits/${expandedId}`,
-        );
-        setDetail(response.data);
-      }
-    } catch (caught) {
-      setError(formatError(caught));
-    } finally {
-      setSaving(false);
-    }
-  }
-
-  async function expand(id: number) {
-    if (expandedId === id) {
-      setExpandedId(null);
-      setDetail(null);
-      return;
-    }
-    setExpandedId(id);
-    try {
-      const response = await apiFetch<{ data: Split }>(`/api/splits/${id}`);
-      setDetail(response.data);
-    } catch (caught) {
-      setError(formatError(caught));
-    }
-  }
+  const splits = useSplits();
+  const createSplit = useCreateSplit();
+  const deleteSplit = useDeleteSplit();
 
   return (
-    <div>
-      <h1 className="mb-4 text-2xl font-bold">Split templates</h1>
-      {error && <p className="mb-3 text-sm text-red-600">{error}</p>}
+    <div className="space-y-4">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Split templates</h1>
+          <p className="text-sm text-muted-foreground">
+            Users clone these templates into their own training splits.
+          </p>
+        </div>
+      </div>
 
-      <details className="mb-4 rounded-xl border p-4">
-        <summary className="cursor-pointer text-sm font-semibold">
-          Add split template
-        </summary>
-        <form
-          className="mt-3 flex flex-wrap items-end gap-2"
-          onSubmit={(event) => {
-            event.preventDefault();
-            run(async () => {
-              await apiFetch("/api/splits", {
-                method: "POST",
-                body: JSON.stringify({
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Add split template</CardTitle>
+          <CardDescription>
+            Give the split a name, then add training days and exercises.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form
+            className="flex flex-wrap items-end gap-2"
+            onSubmit={(event) => {
+              event.preventDefault();
+              toast.promise(
+                createSplit.mutateAsync({
                   name: name.trim(),
                   description: description.trim() || undefined,
                 }),
-              });
-              setName("");
-              setDescription("");
-            });
-          }}
-        >
-          <label className="text-xs">
-            Name
-            <input
-              className="mt-1 block rounded-lg border px-3 py-1.5 text-sm"
-              required
-              value={name}
-              onChange={(event) => setName(event.target.value)}
-            />
-          </label>
-          <label className="flex-1 text-xs">
-            Description
-            <input
-              className="mt-1 w-full rounded-lg border px-3 py-1.5 text-sm"
-              value={description}
-              onChange={(event) => setDescription(event.target.value)}
-            />
-          </label>
-          <button
-            className="rounded-lg bg-black px-4 py-1.5 text-sm font-semibold text-white disabled:opacity-50"
-            disabled={saving}
-            type="submit"
+                {
+                  loading: "Creating…",
+                  success: () => {
+                    setName("");
+                    setDescription("");
+                    return "Split created";
+                  },
+                  error: (error) => error.message,
+                },
+              );
+            }}
           >
-            Create
-          </button>
-        </form>
-      </details>
+            <div className="space-y-1.5">
+              <Label htmlFor="split-name">Name</Label>
+              <Input
+                className="w-56"
+                id="split-name"
+                required
+                value={name}
+                onChange={(event) => setName(event.target.value)}
+              />
+            </div>
+            <div className="flex-1 space-y-1.5">
+              <Label htmlFor="split-description">Description</Label>
+              <Input
+                id="split-description"
+                value={description}
+                onChange={(event) => setDescription(event.target.value)}
+              />
+            </div>
+            <Button
+              disabled={createSplit.isPending}
+              onClick={() => setCreating(true)}
+              type="submit"
+            >
+              <Plus className="size-4" />
+              Create
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
 
-      {splits.loading ? (
-        <p className="text-sm opacity-70">Loading…</p>
+      {splits.isPending ? (
+        <div className="space-y-3">
+          <Skeleton className="h-28 w-full" />
+          <Skeleton className="h-28 w-full" />
+          <Skeleton className="h-28 w-full" />
+        </div>
       ) : (
         <div className="space-y-3">
-          {splits.data?.data.map((split) => (
-            <div key={split.id} className="rounded-xl border p-4">
-              <div className="flex flex-wrap items-center gap-3">
-                <div className="flex-1">
-                  <p className="font-semibold">{split.name}</p>
-                  <p className="text-sm opacity-70">{split.description}</p>
+          {splits.data?.data.map((row) => (
+            <Card key={row.id}>
+              <CardHeader>
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div className="min-w-0 flex-1">
+                    <CardTitle className="text-base">{row.name}</CardTitle>
+                    <CardDescription>{row.description}</CardDescription>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      onClick={() =>
+                        setExpandedId(expandedId === row.id ? null : row.id)
+                      }
+                      size="sm"
+                      variant="outline"
+                    >
+                      {expandedId === row.id ? (
+                        <ChevronDown className="size-4" />
+                      ) : (
+                        <ChevronRight className="size-4" />
+                      )}
+                      Days
+                    </Button>
+                    <Button
+                      onClick={() => {
+                        if (confirm(`Delete split "${row.name}"?`)) {
+                          toast.promise(deleteSplit.mutateAsync(row.id), {
+                            loading: "Deleting…",
+                            success: () => {
+                              if (expandedId === row.id) {
+                                setExpandedId(null);
+                              }
+                              return "Split deleted";
+                            },
+                            error: (error) => error.message,
+                          });
+                        }
+                      }}
+                      size="sm"
+                      variant="outline"
+                    >
+                      <Trash2 className="size-4 text-destructive" />
+                    </Button>
+                  </div>
                 </div>
-                <button
-                  className="text-sm underline"
-                  onClick={() => expand(split.id)}
-                  type="button"
-                >
-                  {expandedId === split.id ? "Collapse" : "Manage days"}
-                </button>
-                <button
-                  className="text-sm text-red-600 underline"
-                  type="button"
-                  onClick={() => {
-                    if (confirm(`Delete split "${split.name}"?`)) {
-                      run(() =>
-                        apiFetch(`/api/splits/${split.id}`, {
-                          method: "DELETE",
-                        }),
-                      );
-                    }
-                  }}
-                >
-                  Delete
-                </button>
-              </div>
-
-              {expandedId === split.id && (
-                <div className="mt-4 border-t pt-4">
-                  {!detail ? (
-                    <p className="text-sm opacity-70">Loading days…</p>
-                  ) : (
-                    <div className="space-y-4">
-                      {detail.days?.map((day) => (
-                        <DayEditor
-                          key={day.id}
-                          day={day}
-                          exercises={exercises.data?.data ?? []}
-                          saving={saving}
-                          onRun={run}
-                        />
-                      ))}
-
-                      <AddDayForm
-                        saving={saving}
-                        onRun={run}
-                        splitId={split.id}
-                        nextOrderIndex={detail.days?.length ?? 0}
-                      />
-                    </div>
-                  )}
-                </div>
+              </CardHeader>
+              {expandedId === row.id && (
+                <CardContent className="border-t pt-4">
+                  <SplitDays splitId={row.id} />
+                </CardContent>
               )}
-            </div>
+            </Card>
           ))}
         </div>
       )}
@@ -202,193 +185,213 @@ function AdminSplits() {
   );
 }
 
-function DayEditor({
-  day,
-  exercises,
-  saving,
-  onRun,
-}: {
-  day: SplitDay;
-  exercises: Exercise[];
-  saving: boolean;
-  onRun: (action: () => Promise<unknown>) => Promise<void>;
-}) {
+function SplitDays({ splitId }: { splitId: number }) {
+  const { data, isPending } = useSplit(splitId);
+  const createDay = useCreateSplitDay();
+  const [dayName, setDayName] = useState("");
+
+  if (isPending || !data) {
+    return <Skeleton className="h-20 w-full" />;
+  }
+
+  return (
+    <div className="space-y-3">
+      {data.data.days.map((day) => (
+        <DayCard key={day.id} day={day} />
+      ))}
+
+      <form
+        className="flex items-end gap-2"
+        onSubmit={(event) => {
+          event.preventDefault();
+          toast.promise(
+            createDay.mutateAsync({
+              splitId,
+              name: dayName.trim(),
+              orderIndex: data.data.days.length,
+            }),
+            {
+              loading: "Adding day…",
+              success: () => {
+                setDayName("");
+                return "Day added";
+              },
+              error: (error) => error.message,
+            },
+          );
+        }}
+      >
+        <div className="w-56 space-y-1.5">
+          <Label htmlFor={`day-name-${splitId}`}>New day</Label>
+          <Input
+            id={`day-name-${splitId}`}
+            placeholder="e.g. Push A"
+            required
+            value={dayName}
+            onChange={(event) => setDayName(event.target.value)}
+          />
+        </div>
+        <Button disabled={createDay.isPending} type="submit" variant="outline">
+          <Plus className="size-4" />
+          Add day
+        </Button>
+      </form>
+    </div>
+  );
+}
+
+function DayCard({ day }: { day: SplitDetail["days"][number] }) {
+  const exercises = useExercises({ page: 1, pageSize: 100 });
+  const createEntry = useCreateSplitDayExercise();
+  const deleteEntry = useDeleteSplitDayExercise();
+  const deleteDay = useDeleteSplitDay();
+
   const [exerciseId, setExerciseId] = useState("");
   const [sets, setSets] = useState(3);
   const [repMin, setRepMin] = useState(8);
   const [repMax, setRepMax] = useState(12);
 
   return (
-    <div className="rounded-lg bg-black/5 p-3">
-      <div className="mb-2 flex items-center gap-3">
-        <p className="flex-1 text-sm font-semibold">{day.name}</p>
-        <button
-          className="text-xs text-red-600 underline"
-          type="button"
-          onClick={() =>
-            onRun(() =>
-              apiFetch(`/api/splits/days/${day.id}`, { method: "DELETE" }),
-            )
-          }
+    <div className="rounded-lg border p-4">
+      <div className="mb-3 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <p className="text-sm font-semibold">{day.name}</p>
+          <Badge variant="secondary">{day.exercises.length} exercises</Badge>
+        </div>
+        <Button
+          onClick={() => {
+            if (confirm(`Delete day "${day.name}"?`)) {
+              toast.promise(deleteDay.mutateAsync(day.id), {
+                loading: "Deleting…",
+                success: () => "Day deleted",
+                error: (error) => error.message,
+              });
+            }
+          }}
+          size="sm"
+          variant="ghost"
         >
-          Delete day
-        </button>
+          <Trash2 className="size-4 text-destructive" />
+        </Button>
       </div>
 
-      <ul className="mb-2 space-y-1 text-sm">
+      <ul className="mb-3 space-y-1.5 text-sm">
         {day.exercises.map((entry) => (
           <li
             key={entry.splitDayExerciseId}
             className="flex items-center gap-2"
           >
             <span className="flex-1">
-              {entry.exerciseName} — {entry.targetSets}×{entry.targetRepMin}–
-              {entry.targetRepMax}
+              <span className="font-medium">{entry.exerciseName}</span>
+              <span className="ml-2 text-muted-foreground">
+                {entry.targetSets} sets × {entry.targetRepMin}–
+                {entry.targetRepMax} reps
+              </span>
             </span>
-            <button
-              className="text-xs text-red-600 underline"
-              type="button"
+            <Button
+              disabled={deleteEntry.isPending}
               onClick={() =>
-                onRun(() =>
-                  apiFetch(
-                    `/api/splits/day-exercises/${entry.splitDayExerciseId}`,
-                    {
-                      method: "DELETE",
-                    },
-                  ),
+                toast.promise(
+                  deleteEntry.mutateAsync(entry.splitDayExerciseId),
+                  {
+                    loading: "Removing…",
+                    success: "Exercise removed",
+                    error: (error) => error.message,
+                  },
                 )
               }
+              size="sm"
+              variant="ghost"
             >
-              Remove
-            </button>
+              <Trash2 className="size-3.5 text-destructive" />
+            </Button>
           </li>
         ))}
         {day.exercises.length === 0 && (
-          <li className="opacity-60">No exercises yet.</li>
+          <li className="text-muted-foreground">No exercises yet.</li>
         )}
       </ul>
 
       <form
-        className="flex flex-wrap items-end gap-2 text-xs"
+        className="flex flex-wrap items-end gap-2"
         onSubmit={(event) => {
           event.preventDefault();
           if (!exerciseId) {
             return;
           }
-          onRun(() =>
-            apiFetch(`/api/splits/days/${day.id}/exercises`, {
-              method: "POST",
-              body: JSON.stringify({
-                exerciseId: Number(exerciseId),
-                orderIndex: day.exercises.length,
-                targetSets: sets,
-                targetRepMin: repMin,
-                targetRepMax: repMax,
-              }),
+          toast.promise(
+            createEntry.mutateAsync({
+              dayId: day.id,
+              exerciseId: Number(exerciseId),
+              orderIndex: day.exercises.length,
+              targetSets: sets,
+              targetRepMin: repMin,
+              targetRepMax: repMax,
             }),
+            {
+              loading: "Adding…",
+              success: () => {
+                setExerciseId("");
+                return "Exercise added";
+              },
+              error: (error) => error.message,
+            },
           );
         }}
       >
-        <select
-          className="rounded-lg border px-2 py-1"
-          value={exerciseId}
-          onChange={(event) => setExerciseId(event.target.value)}
-        >
-          <option value="">Add exercise…</option>
-          {exercises.map((exercise) => (
-            <option key={exercise.id} value={exercise.id}>
-              {exercise.name}
-            </option>
-          ))}
-        </select>
-        <label>
-          Sets
-          <input
-            className="ml-1 w-14 rounded-lg border px-2 py-1"
-            min={1}
+        <Select value={exerciseId} onValueChange={setExerciseId}>
+          <SelectTrigger className="w-56">
+            <SelectValue placeholder="Add exercise…" />
+          </SelectTrigger>
+          <SelectContent>
+            {exercises.data?.data.map((exercise) => (
+              <SelectItem key={exercise.id} value={String(exercise.id)}>
+                {exercise.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <div className="space-y-1">
+          <Label className="text-xs">Sets</Label>
+          <Input
+            className="w-16"
             max={20}
+            min={1}
             type="number"
             value={sets}
             onChange={(event) => setSets(Number(event.target.value))}
           />
-        </label>
-        <label>
-          Reps
-          <input
-            className="ml-1 w-14 rounded-lg border px-2 py-1"
-            min={1}
-            type="number"
-            value={repMin}
-            onChange={(event) => setRepMin(Number(event.target.value))}
-          />
-          –
-          <input
-            className="w-14 rounded-lg border px-2 py-1"
-            min={1}
-            type="number"
-            value={repMax}
-            onChange={(event) => setRepMax(Number(event.target.value))}
-          />
-        </label>
-        <button
-          className="rounded-lg bg-black px-3 py-1 font-semibold text-white disabled:opacity-50"
-          disabled={saving || !exerciseId}
+        </div>
+        <div className="space-y-1">
+          <Label className="text-xs">Reps</Label>
+          <div className="flex items-center gap-1">
+            <Input
+              className="w-16"
+              min={1}
+              type="number"
+              value={repMin}
+              onChange={(event) => setRepMin(Number(event.target.value))}
+            />
+            <span className="text-muted-foreground">–</span>
+            <Input
+              className="w-16"
+              min={1}
+              type="number"
+              value={repMax}
+              onChange={(event) => setRepMax(Number(event.target.value))}
+            />
+          </div>
+        </div>
+        <Button
+          disabled={!exerciseId || createEntry.isPending}
+          size="sm"
           type="submit"
+          variant="outline"
         >
+          <Plus className="size-4" />
           Add
-        </button>
+        </Button>
       </form>
     </div>
-  );
-}
-
-function AddDayForm({
-  splitId,
-  nextOrderIndex,
-  saving,
-  onRun,
-}: {
-  splitId: number;
-  nextOrderIndex: number;
-  saving: boolean;
-  onRun: (action: () => Promise<unknown>) => Promise<void>;
-}) {
-  const [name, setName] = useState("");
-
-  return (
-    <form
-      className="flex items-end gap-2"
-      onSubmit={(event) => {
-        event.preventDefault();
-        onRun(async () => {
-          await apiFetch(`/api/splits/${splitId}/days`, {
-            method: "POST",
-            body: JSON.stringify({
-              name: name.trim(),
-              orderIndex: nextOrderIndex,
-            }),
-          });
-          setName("");
-        });
-      }}
-    >
-      <label className="text-xs">
-        New day
-        <input
-          className="mt-1 block rounded-lg border px-3 py-1.5 text-sm"
-          required
-          placeholder="e.g. Push A"
-          value={name}
-          onChange={(event) => setName(event.target.value)}
-        />
-      </label>
-      <button
-        className="rounded-lg border px-4 py-1.5 text-sm font-semibold disabled:opacity-50"
-        disabled={saving}
-        type="submit"
-      >
-        Add day
-      </button>
-    </form>
   );
 }

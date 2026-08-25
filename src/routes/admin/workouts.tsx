@@ -1,17 +1,17 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useState } from "react";
 
-import { useApi } from "../admin";
-
-type Workout = {
-  id: number;
-  userId: number;
-  userName: string | null;
-  name: string;
-  startedAt: string;
-  completedAt: string | null;
-  status: string;
-  notes: string | null;
-};
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { useWorkouts } from "@/lib/queries";
 
 export const Route = createFileRoute("/admin/workouts")({
   component: AdminWorkouts,
@@ -19,88 +19,122 @@ export const Route = createFileRoute("/admin/workouts")({
 
 function AdminWorkouts() {
   const [page, setPage] = useState(1);
-  const { data, loading } = useApi<{
-    data: Workout[];
-    total: number;
-    page: number;
-    pageSize: number;
-  }>(`/api/workouts?page=${page}&pageSize=25`);
+  const { data, isPending } = useWorkouts({ page });
 
   const totalPages = data
     ? Math.max(1, Math.ceil(data.total / data.pageSize))
     : 1;
 
   return (
-    <div>
-      <h1 className="mb-1 text-2xl font-bold">Workouts</h1>
-      <p className="mb-4 text-sm opacity-70">
-        Read-only view of all logged workouts.
-      </p>
+    <div className="space-y-4">
+      <div>
+        <h1 className="text-2xl font-bold tracking-tight">Workouts</h1>
+        <p className="text-sm text-muted-foreground">
+          Read-only view of all logged workouts.
+        </p>
+      </div>
 
-      {loading ? (
-        <p className="text-sm opacity-70">Loading…</p>
-      ) : (
-        <div className="overflow-x-auto rounded-xl border">
-          <table className="w-full text-sm">
-            <thead className="border-b bg-black/5 text-left">
-              <tr>
-                <th className="p-2">Name</th>
-                <th className="p-2">User</th>
-                <th className="p-2">Started</th>
-                <th className="p-2">Completed</th>
-                <th className="p-2">Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {data?.data.length === 0 && (
-                <tr>
-                  <td className="p-4 text-center opacity-60" colSpan={5}>
-                    No workouts logged yet.
-                  </td>
-                </tr>
-              )}
-              {data?.data.map((workout) => (
-                <tr key={workout.id} className="border-b last:border-0">
-                  <td className="p-2 font-medium">{workout.name}</td>
-                  <td className="p-2">
+      <div className="rounded-lg border">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Name</TableHead>
+              <TableHead>User</TableHead>
+              <TableHead>Started</TableHead>
+              <TableHead>Completed</TableHead>
+              <TableHead>Status</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {isPending ? (
+              <TableRow>
+                <TableCell className="h-24 text-center" colSpan={5}>
+                  Loading…
+                </TableCell>
+              </TableRow>
+            ) : data?.data.length === 0 ? (
+              <TableRow>
+                <TableCell className="h-24 text-center" colSpan={5}>
+                  No workouts logged yet.
+                </TableCell>
+              </TableRow>
+            ) : (
+              data?.data.map((workout) => (
+                <TableRow key={workout.id}>
+                  <TableCell className="font-medium">{workout.name}</TableCell>
+                  <TableCell>
                     {workout.userName ?? `#${workout.userId}`}
-                  </td>
-                  <td className="p-2">
+                  </TableCell>
+                  <TableCell>
                     {new Date(workout.startedAt).toLocaleString()}
-                  </td>
-                  <td className="p-2">
+                  </TableCell>
+                  <TableCell>
                     {workout.completedAt
                       ? new Date(workout.completedAt).toLocaleString()
                       : "—"}
-                  </td>
-                  <td className="p-2">{workout.status}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
+                  </TableCell>
+                  <TableCell>
+                    <Badge
+                      variant={
+                        workout.status === "completed" ? "default" : "secondary"
+                      }
+                    >
+                      {workout.status.replace("_", " ")}
+                    </Badge>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
+      </div>
 
-      <div className="mt-3 flex items-center gap-3 text-sm">
-        <button
-          className="rounded-lg border px-3 py-1 disabled:opacity-40"
+      <TablePagination
+        page={page}
+        setPage={setPage}
+        total={data?.total ?? 0}
+        totalPages={totalPages}
+        label="workouts"
+      />
+    </div>
+  );
+}
+
+export function TablePagination({
+  page,
+  setPage,
+  total,
+  totalPages,
+  label,
+}: {
+  page: number;
+  setPage: (update: (current: number) => number) => void;
+  total: number;
+  totalPages: number;
+  label: string;
+}) {
+  return (
+    <div className="flex items-center justify-between text-sm text-muted-foreground">
+      <span>
+        {total} {label} · page {page} of {totalPages}
+      </span>
+      <div className="flex gap-2">
+        <Button
           disabled={page <= 1}
           onClick={() => setPage((current) => current - 1)}
-          type="button"
+          size="sm"
+          variant="outline"
         >
           Previous
-        </button>
-        <span>
-          Page {page} of {totalPages} ({data?.total ?? 0} total)
-        </span>
-        <button
-          className="rounded-lg border px-3 py-1 disabled:opacity-40"
+        </Button>
+        <Button
           disabled={page >= totalPages}
           onClick={() => setPage((current) => current + 1)}
-          type="button"
+          size="sm"
+          variant="outline"
         >
           Next
-        </button>
+        </Button>
       </div>
     </div>
   );

@@ -1,55 +1,61 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { Activity, CalendarDays, Dumbbell, Scale, Users } from "lucide-react";
 
-import { useApi } from "../admin";
-
-type Stats = {
-  exercises: number;
-  splits: number;
-  users: number;
-  admins: number;
-  workouts: number;
-  completedWorkouts: number;
-  sets: number;
-  bodyWeights: number;
-};
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useStats } from "@/lib/queries";
 
 export const Route = createFileRoute("/admin/")({
   component: AdminDashboard,
 });
 
 function AdminDashboard() {
-  const { data, loading, error } = useApi<{ data: Stats }>("/api/stats");
+  const { data, isPending } = useStats();
 
-  if (loading) {
-    return <p className="text-sm opacity-70">Loading stats…</p>;
-  }
-  if (error) {
-    return <p className="text-sm text-red-600">{error}</p>;
-  }
-  if (!data) {
-    return null;
-  }
-
-  const cards: [string, string | number][] = [
-    ["Exercises", data.data.exercises],
-    ["Split templates", data.data.splits],
-    ["Users", data.data.users],
-    ["Admins", data.data.admins],
-    ["Workouts", data.data.workouts],
-    ["Completed workouts", data.data.completedWorkouts],
-    ["Sets logged", data.data.sets],
-    ["Body weight entries", data.data.bodyWeights],
+  const cards = [
+    { label: "Exercises", value: data?.data.exercises, icon: Dumbbell },
+    { label: "Split templates", value: data?.data.splits, icon: CalendarDays },
+    { label: "Users", value: data?.data.users, icon: Users },
+    { label: "Admins", value: data?.data.admins, icon: Users },
+    { label: "Workouts", value: data?.data.workouts, icon: Activity },
+    {
+      label: "Completed workouts",
+      value: data?.data.completedWorkouts,
+      icon: Activity,
+    },
+    { label: "Sets logged", value: data?.data.sets, icon: Dumbbell },
+    {
+      label: "Body weight entries",
+      value: data?.data.bodyWeights,
+      icon: Scale,
+    },
   ];
 
   return (
-    <div>
-      <h1 className="mb-4 text-2xl font-bold">Dashboard</h1>
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-        {cards.map(([label, value]) => (
-          <div key={label} className="rounded-xl border p-4">
-            <p className="text-2xl font-bold">{value}</p>
-            <p className="text-sm opacity-70">{label}</p>
-          </div>
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
+        <p className="text-sm text-muted-foreground">
+          Overview of your Ploder application data.
+        </p>
+      </div>
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+        {cards.map((card) => (
+          <Card key={card.label}>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">
+                {card.label}
+              </CardTitle>
+              <card.icon className="size-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              {isPending ? (
+                <Skeleton className="h-8 w-16" />
+              ) : (
+                <p className="text-2xl font-bold">{card.value}</p>
+              )}
+            </CardContent>
+          </Card>
         ))}
       </div>
     </div>

@@ -1,17 +1,58 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { flexRender } from "@tanstack/react-table";
+import {
+  type ColumnDef,
+  getCoreRowModel,
+  useLegacyTable as useReactTable,
+} from "@tanstack/react-table/legacy";
 import { useState } from "react";
+import { toast } from "sonner";
 
-import { apiFetch, formatError } from "#/lib/api";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  type Exercise,
+  useCreateExercise,
+  useDeleteExercise,
+  useExercises,
+  useUpdateExercise,
+} from "@/lib/queries";
 
-import { useApi } from "../admin";
-
-type Exercise = {
-  id: number;
-  name: string;
-  muscleGroup: string;
-  equipment: string;
-  isCompound: boolean;
-};
+export const Route = createFileRoute("/admin/exercises")({
+  component: AdminExercises,
+});
 
 const MUSCLE_GROUPS = [
   "chest",
@@ -21,47 +62,139 @@ const MUSCLE_GROUPS = [
   "legs",
   "glutes",
   "core",
-];
-const EQUIPMENT = ["barbell", "dumbbell", "machine", "cable", "bodyweight"];
+] as const;
+const EQUIPMENT = [
+  "barbell",
+  "dumbbell",
+  "machine",
+  "cable",
+  "bodyweight",
+] as const;
 
-export const Route = createFileRoute("/admin/exercises")({
-  component: AdminExercises,
-});
+type ExerciseValues = {
+  name: string;
+  muscleGroup: Exercise["muscleGroup"];
+  equipment: Exercise["equipment"];
+  isCompound: boolean;
+};
 
 function AdminExercises() {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
   const [muscleGroup, setMuscleGroup] = useState("");
-  const [error, setError] = useState<string | null>(null);
-  const [saving, setSaving] = useState(false);
+  const [equipment, setEquipment] = useState("");
   const [editing, setEditing] = useState<Exercise | null>(null);
+  const [deleting, setDeleting] = useState<Exercise | null>(null);
+  const [dialogOpen, setDialogOpen] = useState(false);
 
-  const query = new URLSearchParams({ page: String(page), pageSize: "25" });
-  if (search) {
-    query.set("search", search);
+  const { data, isPending } = useExercises({
+    page,
+    search: search || undefined,
+    muscleGroup: muscleGroup || undefined,
+    equipment: equipment || undefined,
+  });
+  const createExercise = useCreateExercise();
+  const updateExercise = useUpdateExercise();
+  const deleteExercise = useDeleteExercise();
+
+  const columns: ColumnDef<Exercise>[] = [
+    { accessorKey: "name", header: "Name" },
+    {
+      accessorKey: "muscleGroup",
+      header: "Muscle group",
+      cell: ({ row }) => (
+        <span className="capitalize">{row.original.muscleGroup}</span>
+      ),
+    },
+    {
+      accessorKey: "equipment",
+      header: "Equipment",
+      cell: ({ row }) => (
+        <span className="capitalize">{row.original.equipment}</span>
+      ),
+    },
+    {
+      accessorKey: "isCompound",
+      header: "Type",
+      cell: ({ row }) => (
+        <span
+          className={
+            row.original.isCompound
+              ? "font-medium text-primary"
+              : "text-muted-foreground"
+          }
+        >
+          {row.original.isCompound ? "Compound" : "Isolation"}
+        </span>
+      ),
+    },
+    {
+      id: "actions",
+      header: () => <span className="sr-only">Actions</span>,
+      cell: ({ row }) => (
+        <div className="flex justify-end gap-2">
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => {
+              setEditing(row.original);
+              setDialogOpen(true);
+            }}
+          >
+            Edit
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            className="text-destructive"
+            onClick={() => setDeleting(row.original)}
+          >
+            Delete
+          </Button>
+        </div>
+      ),
+    },
+  ];
+
+  const table = useReactTable({
+    data: data?.data ?? [],
+    columns,
+    getCoreRowModel: getCoreRowModel(),
+    manualPagination: true,
+    pageCount: data ? Math.max(1, Math.ceil(data.total / data.pageSize)) : 1,
+  });
+
+  function handleSave(values: ExerciseValues) {
+    const mutation = editing
+      ? updateExercise.mutateAsync({ ...values, id: editing.id })
+      : createExercise.mutateAsync(values);
+
+    toast.promise(mutation, {
+      loading: editing ? "Updating exercise…" : "Creating exercise…",
+      success: () => {
+        setDialogOpen(false);
+        setEditing(null);
+        return editing ? "Exercise updated" : "Exercise created";
+      },
+      error: (error) => error.message,
+    });
   }
-  if (muscleGroup) {
-    query.set("muscleGroup", muscleGroup);
-  }
 
-  const { data, loading, refetch } = useApi<{
-    data: Exercise[];
-    total: number;
-    page: number;
-    pageSize: number;
-  }>(`/api/exercises?${query.toString()}`);
-
-  async function run(action: () => Promise<unknown>) {
-    setSaving(true);
-    setError(null);
-    try {
-      await action();
-      refetch();
-    } catch (caught) {
-      setError(formatError(caught));
-    } finally {
-      setSaving(false);
+  function handleDelete() {
+    if (!deleting) {
+      return;
     }
+    toast.promise(deleteExercise.mutateAsync(deleting.id), {
+      loading: "Deleting…",
+      success: () => {
+        setDeleting(null);
+        return `"${deleting.name}" deleted`;
+      },
+      error: (error) => {
+        setDeleting(null);
+        return error.message;
+      },
+    });
   }
 
   const totalPages = data
@@ -69,178 +202,203 @@ function AdminExercises() {
     : 1;
 
   return (
-    <div>
-      <h1 className="mb-4 text-2xl font-bold">Exercises</h1>
+    <div className="space-y-4">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Exercises</h1>
+          <p className="text-sm text-muted-foreground">
+            Manage the global exercise catalog.
+          </p>
+        </div>
+        <Button
+          onClick={() => {
+            setEditing(null);
+            setDialogOpen(true);
+          }}
+        >
+          Add exercise
+        </Button>
+      </div>
 
-      <form
-        className="mb-4 flex flex-wrap items-end gap-2"
-        onSubmit={(event) => {
-          event.preventDefault();
-          setPage(1);
-          refetch();
-        }}
-      >
-        <input
-          className="rounded-lg border px-3 py-1.5 text-sm"
+      <div className="flex flex-wrap items-center gap-2">
+        <Input
+          className="w-52"
           placeholder="Search name…"
           value={search}
-          onChange={(event) => setSearch(event.target.value)}
-        />
-        <select
-          className="rounded-lg border px-3 py-1.5 text-sm"
-          value={muscleGroup}
           onChange={(event) => {
-            setMuscleGroup(event.target.value);
+            setSearch(event.target.value);
+            setPage(1);
+          }}
+        />
+        <Select
+          value={muscleGroup || "all"}
+          onValueChange={(value) => {
+            setMuscleGroup(value === "all" ? "" : value);
             setPage(1);
           }}
         >
-          <option value="">All muscle groups</option>
-          {MUSCLE_GROUPS.map((group) => (
-            <option key={group} value={group}>
-              {group}
-            </option>
-          ))}
-        </select>
-      </form>
-
-      {error && <p className="mb-3 text-sm text-red-600">{error}</p>}
-
-      <details
-        className="mb-4 rounded-xl border p-4"
-        open={data?.data.length === 0}
-      >
-        <summary className="cursor-pointer text-sm font-semibold">
-          Add exercise
-        </summary>
-        <ExerciseForm
-          onSave={(values) =>
-            run(async () => {
-              await apiFetch("/api/exercises", {
-                method: "POST",
-                body: JSON.stringify(values),
-              });
-            })
-          }
-          saving={saving}
-        />
-      </details>
-
-      {loading ? (
-        <p className="text-sm opacity-70">Loading…</p>
-      ) : (
-        <div className="overflow-x-auto rounded-xl border">
-          <table className="w-full text-sm">
-            <thead className="border-b bg-black/5 text-left">
-              <tr>
-                <th className="p-2">Name</th>
-                <th className="p-2">Muscle group</th>
-                <th className="p-2">Equipment</th>
-                <th className="p-2">Compound</th>
-                <th className="p-2" />
-              </tr>
-            </thead>
-            <tbody>
-              {data?.data.map((exercise) => (
-                <tr key={exercise.id} className="border-b last:border-0">
-                  <td className="p-2 font-medium">{exercise.name}</td>
-                  <td className="p-2">{exercise.muscleGroup}</td>
-                  <td className="p-2">{exercise.equipment}</td>
-                  <td className="p-2">{exercise.isCompound ? "Yes" : "No"}</td>
-                  <td className="p-2 text-right">
-                    <button
-                      className="mr-2 underline"
-                      onClick={() => setEditing(exercise)}
-                      type="button"
-                    >
-                      Edit
-                    </button>
-                    <button
-                      className="text-red-600 underline"
-                      type="button"
-                      onClick={() => {
-                        if (confirm(`Delete "${exercise.name}"?`)) {
-                          run(() =>
-                            apiFetch(`/api/exercises/${exercise.id}`, {
-                              method: "DELETE",
-                            }),
-                          );
-                        }
-                      }}
-                    >
-                      Delete
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
-
-      <div className="mt-3 flex items-center gap-3 text-sm">
-        <button
-          className="rounded-lg border px-3 py-1 disabled:opacity-40"
-          disabled={page <= 1}
-          onClick={() => setPage((current) => current - 1)}
-          type="button"
+          <SelectTrigger className="w-44">
+            <SelectValue placeholder="Muscle group" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All muscle groups</SelectItem>
+            {MUSCLE_GROUPS.map((group) => (
+              <SelectItem key={group} value={group} className="capitalize">
+                {group}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <Select
+          value={equipment || "all"}
+          onValueChange={(value) => {
+            setEquipment(value === "all" ? "" : value);
+            setPage(1);
+          }}
         >
-          Previous
-        </button>
-        <span>
-          Page {page} of {totalPages} ({data?.total ?? 0} total)
-        </span>
-        <button
-          className="rounded-lg border px-3 py-1 disabled:opacity-40"
-          disabled={page >= totalPages}
-          onClick={() => setPage((current) => current + 1)}
-          type="button"
-        >
-          Next
-        </button>
+          <SelectTrigger className="w-40">
+            <SelectValue placeholder="Equipment" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All equipment</SelectItem>
+            {EQUIPMENT.map((item) => (
+              <SelectItem key={item} value={item} className="capitalize">
+                {item}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
-      {editing && (
-        <div className="fixed inset-0 grid place-items-center bg-black/50 p-4">
-          <div className="w-full max-w-md rounded-xl bg-white p-6 text-black">
-            <h2 className="mb-4 text-lg font-bold">Edit exercise</h2>
-            <ExerciseForm
-              initial={editing}
-              saving={saving}
-              onSave={(values) =>
-                run(async () => {
-                  await apiFetch(`/api/exercises/${editing.id}`, {
-                    method: "PATCH",
-                    body: JSON.stringify(values),
-                  });
-                  setEditing(null);
-                })
-              }
-              onCancel={() => setEditing(null)}
-            />
-          </div>
+      <div className="rounded-lg border">
+        <Table>
+          <TableHeader>
+            {table.getHeaderGroups().map((headerGroup) => (
+              <TableRow key={headerGroup.id}>
+                {headerGroup.headers.map((header) => (
+                  <TableHead key={header.id}>
+                    {flexRender(
+                      header.column.columnDef.header,
+                      header.getContext(),
+                    )}
+                  </TableHead>
+                ))}
+              </TableRow>
+            ))}
+          </TableHeader>
+          <TableBody>
+            {isPending ? (
+              <TableRow>
+                <TableCell
+                  className="h-24 text-center"
+                  colSpan={columns.length}
+                >
+                  Loading…
+                </TableCell>
+              </TableRow>
+            ) : table.getRowModel().rows.length === 0 ? (
+              <TableRow>
+                <TableCell
+                  className="h-24 text-center"
+                  colSpan={columns.length}
+                >
+                  No exercises found.
+                </TableCell>
+              </TableRow>
+            ) : (
+              table.getRowModel().rows.map((row) => (
+                <TableRow key={row.id}>
+                  {row.getVisibleCells().map((cell) => (
+                    <TableCell key={cell.id}>
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext(),
+                      )}
+                    </TableCell>
+                  ))}
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
+      </div>
+
+      <div className="flex items-center justify-between text-sm text-muted-foreground">
+        <span>
+          {data?.total ?? 0} exercises · page {page} of {totalPages}
+        </span>
+        <div className="flex gap-2">
+          <Button
+            disabled={page <= 1}
+            onClick={() => setPage((current) => current - 1)}
+            size="sm"
+            variant="outline"
+          >
+            Previous
+          </Button>
+          <Button
+            disabled={page >= totalPages}
+            onClick={() => setPage((current) => current + 1)}
+            size="sm"
+            variant="outline"
+          >
+            Next
+          </Button>
         </div>
-      )}
+      </div>
+
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>
+              {editing ? "Edit exercise" : "Add exercise"}
+            </DialogTitle>
+          </DialogHeader>
+          <ExerciseForm
+            key={editing?.id ?? "new"}
+            initial={editing ?? undefined}
+            saving={createExercise.isPending || updateExercise.isPending}
+            onSave={handleSave}
+          />
+        </DialogContent>
+      </Dialog>
+
+      <AlertDialog
+        open={deleting !== null}
+        onOpenChange={(open) => !open && setDeleting(null)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete exercise?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This permanently removes "{deleting?.name}" from the catalog.
+              Exercises used in split templates or logged workouts cannot be
+              deleted.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-white hover:bg-destructive/90"
+              onClick={handleDelete}
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
-
-type ExerciseValues = {
-  name: string;
-  muscleGroup: string;
-  equipment: string;
-  isCompound: boolean;
-};
 
 function ExerciseForm({
   initial,
   saving,
   onSave,
-  onCancel,
 }: {
   initial?: Exercise;
   saving: boolean;
   onSave: (values: ExerciseValues) => void;
-  onCancel?: () => void;
 }) {
   const [values, setValues] = useState<ExerciseValues>({
     name: initial?.name ?? "",
@@ -251,84 +409,85 @@ function ExerciseForm({
 
   return (
     <form
-      className="mt-3 flex flex-wrap items-end gap-2"
+      className="space-y-4"
       onSubmit={(event) => {
         event.preventDefault();
-        onSave({
-          ...values,
-          name: values.name.trim(),
-        });
+        onSave({ ...values, name: values.name.trim() });
       }}
     >
-      <label className="flex-1 text-xs">
-        Name
-        <input
-          className="mt-1 w-full rounded-lg border px-3 py-1.5 text-sm"
+      <div className="space-y-2">
+        <Label htmlFor="exercise-name">Name</Label>
+        <Input
+          id="exercise-name"
           required
           value={values.name}
           onChange={(event) =>
             setValues({ ...values, name: event.target.value })
           }
         />
-      </label>
-      <label className="text-xs">
-        Muscle group
-        <select
-          className="mt-1 block rounded-lg border px-3 py-1.5 text-sm"
-          value={values.muscleGroup}
-          onChange={(event) =>
-            setValues({ ...values, muscleGroup: event.target.value })
-          }
-        >
-          {MUSCLE_GROUPS.map((group) => (
-            <option key={group} value={group}>
-              {group}
-            </option>
-          ))}
-        </select>
-      </label>
-      <label className="text-xs">
-        Equipment
-        <select
-          className="mt-1 block rounded-lg border px-3 py-1.5 text-sm"
-          value={values.equipment}
-          onChange={(event) =>
-            setValues({ ...values, equipment: event.target.value })
-          }
-        >
-          {EQUIPMENT.map((item) => (
-            <option key={item} value={item}>
-              {item}
-            </option>
-          ))}
-        </select>
-      </label>
-      <label className="flex items-center gap-1 text-xs">
+      </div>
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label>Muscle group</Label>
+          <Select
+            value={values.muscleGroup}
+            onValueChange={(value) =>
+              setValues({
+                ...values,
+                muscleGroup: value as ExerciseValues["muscleGroup"],
+              })
+            }
+          >
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {MUSCLE_GROUPS.map((group) => (
+                <SelectItem key={group} value={group} className="capitalize">
+                  {group}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="space-y-2">
+          <Label>Equipment</Label>
+          <Select
+            value={values.equipment}
+            onValueChange={(value) =>
+              setValues({
+                ...values,
+                equipment: value as ExerciseValues["equipment"],
+              })
+            }
+          >
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {EQUIPMENT.map((item) => (
+                <SelectItem key={item} value={item} className="capitalize">
+                  {item}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+      <label className="flex items-center gap-2 text-sm">
         <input
           checked={values.isCompound}
+          className="size-4 accent-black"
           type="checkbox"
           onChange={(event) =>
             setValues({ ...values, isCompound: event.target.checked })
           }
         />
-        Compound
+        Compound exercise
       </label>
-      <button
-        className="rounded-lg bg-black px-4 py-1.5 text-sm font-semibold text-white disabled:opacity-50"
-        disabled={saving}
-        type="submit"
-      >
-        {saving ? "Saving…" : "Save"}
-      </button>
-      {onCancel && (
-        <button
-          className="rounded-lg border px-4 py-1.5 text-sm"
-          onClick={onCancel}
-          type="button"
-        >
-          Cancel
-        </button>
-      )}
+      <Button className="w-full" disabled={saving} type="submit">
+        {saving ? "Saving…" : "Save exercise"}
+      </Button>
     </form>
   );
 }

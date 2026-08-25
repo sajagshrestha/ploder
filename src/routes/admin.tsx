@@ -1,8 +1,23 @@
-import { SignInButton, UserButton } from "@clerk/tanstack-react-start";
-import { createFileRoute, Link, Outlet } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { SignInButton, UserButton, useUser } from "@clerk/tanstack-react-start";
+import { useQuery } from "@tanstack/react-query";
+import {
+  createFileRoute,
+  Link,
+  Outlet,
+  useMatches,
+} from "@tanstack/react-router";
+import {
+  CalendarDays,
+  ClipboardList,
+  Dumbbell,
+  LayoutDashboard,
+  Scale,
+  Users,
+} from "lucide-react";
 
-import { ApiError, apiFetch, formatError } from "#/lib/api";
+import { Button } from "@/components/ui/button";
+import { apiFetch } from "@/lib/api";
+import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/admin")({
   component: AdminLayout,
@@ -11,129 +26,144 @@ export const Route = createFileRoute("/admin")({
 type Me = { id: number; name: string; email: string; role: "user" | "admin" };
 
 const navItems = [
-  { to: "/admin", label: "Dashboard" },
-  { to: "/admin/exercises", label: "Exercises" },
-  { to: "/admin/splits", label: "Splits" },
-  { to: "/admin/users", label: "Users" },
-  { to: "/admin/workouts", label: "Workouts" },
-  { to: "/admin/body-weights", label: "Body Weight" },
-];
+  { to: "/admin", label: "Dashboard", icon: LayoutDashboard },
+  { to: "/admin/exercises", label: "Exercises", icon: Dumbbell },
+  { to: "/admin/splits", label: "Splits", icon: CalendarDays },
+  { to: "/admin/users", label: "Users", icon: Users },
+  { to: "/admin/workouts", label: "Workouts", icon: ClipboardList },
+  { to: "/admin/body-weights", label: "Body Weight", icon: Scale },
+] as const;
+
+function useMe(enabled: boolean) {
+  return useQuery({
+    queryKey: ["me"],
+    queryFn: () => apiFetch<{ data: Me }>("/api/me"),
+    retry: false,
+    enabled,
+  });
+}
 
 function AdminLayout() {
-  const [state, setState] = useState<
-    "loading" | "ready" | "unauthenticated" | "forbidden"
-  >("loading");
+  const { isLoaded, isSignedIn } = useUser();
+  const me = useMe(Boolean(isLoaded && isSignedIn));
+  const matches = useMatches();
+  const currentPath = matches.at(-1)?.pathname ?? "/admin";
 
-  useEffect(() => {
-    apiFetch<{ data: Me }>("/api/me")
-      .then((response) => {
-        if (response.data.role !== "admin") {
-          setState("forbidden");
-        } else {
-          setState("ready");
-        }
-      })
-      .catch((error) => {
-        setState(
-          error instanceof ApiError && error.status === 401
-            ? "unauthenticated"
-            : "forbidden",
-        );
-      });
-  }, []);
-
-  if (state === "loading") {
+  if (!isLoaded || me.isPending) {
     return (
-      <div className="grid min-h-screen place-items-center text-sm">
-        Checking access…
+      <div className="grid min-h-screen place-items-center">
+        <p className="animate-pulse text-sm text-muted-foreground">
+          Checking access…
+        </p>
       </div>
     );
   }
 
-  if (state === "unauthenticated") {
+  if (!isSignedIn || me.isError) {
     return (
-      <div className="grid min-h-screen place-items-center gap-4 p-8 text-center">
-        <div>
-          <h1 className="mb-2 text-2xl font-bold">Admin access</h1>
-          <p className="mb-4 text-sm opacity-70">
+      <div className="grid min-h-screen place-items-center p-8">
+        <div className="flex max-w-sm flex-col items-center gap-4 text-center">
+          <h1 className="text-2xl font-bold">Admin access</h1>
+          <p className="text-sm text-muted-foreground">
             Sign in with an admin account to continue.
           </p>
           <SignInButton mode="modal">
-            <button
-              className="rounded-lg bg-black px-4 py-2 text-sm font-semibold text-white"
-              type="button"
-            >
-              Sign in
-            </button>
+            <Button>Sign in</Button>
           </SignInButton>
         </div>
       </div>
     );
   }
 
-  if (state === "forbidden") {
+  if (me.data?.data.role !== "admin") {
     return (
-      <div className="grid min-h-screen place-items-center gap-4 p-8 text-center">
-        <div>
-          <h1 className="mb-2 text-2xl font-bold">Forbidden</h1>
-          <p className="text-sm opacity-70">
-            Your account does not have admin permissions. Ask an admin to grant
-            access via ADMIN_EMAILS or the users panel.
+      <div className="grid min-h-screen place-items-center p-8">
+        <div className="flex max-w-sm flex-col items-center gap-4 text-center">
+          <h1 className="text-2xl font-bold">Forbidden</h1>
+          <p className="text-sm text-muted-foreground">
+            Your account does not have admin permissions. Add your email to
+            ADMIN_EMAILS to gain access.
           </p>
         </div>
       </div>
     );
   }
 
+  const activeLabel =
+    navItems.find((item) => currentPath.startsWith(item.to))?.label ??
+    "Dashboard";
+
   return (
-    <div className="min-h-screen">
-      <header className="border-b px-4 py-3">
-        <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-4 gap-y-2">
-          <span className="font-bold">Ploder Admin</span>
-          <nav className="flex flex-wrap gap-x-4 text-sm">
+    <div className="flex min-h-screen">
+      <aside className="sticky top-0 hidden h-screen w-60 shrink-0 flex-col border-r bg-sidebar md:flex">
+        <div className="flex items-center gap-2 px-5 py-5">
+          <div className="flex size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+            <Dumbbell className="size-4" />
+          </div>
+          <div>
+            <p className="text-sm leading-tight font-bold">Ploder</p>
+            <p className="text-xs text-muted-foreground">Admin panel</p>
+          </div>
+        </div>
+        <nav className="flex-1 space-y-1 px-3">
+          {navItems.map((item) => {
+            const active = currentPath.startsWith(item.to);
+            return (
+              <Link
+                key={item.to}
+                to={item.to}
+                className={cn(
+                  "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors",
+                  active
+                    ? "bg-sidebar-accent font-semibold text-sidebar-accent-foreground"
+                    : "text-muted-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground",
+                )}
+              >
+                <item.icon className="size-4" />
+                {item.label}
+              </Link>
+            );
+          })}
+        </nav>
+        <div className="border-t px-5 py-4">
+          <div className="flex items-center gap-3">
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-medium">
+                {me.data.data.name}
+              </p>
+              <p className="truncate text-xs text-muted-foreground">
+                {me.data.data.email}
+              </p>
+            </div>
+            <UserButton />
+          </div>
+        </div>
+      </aside>
+
+      <div className="flex min-w-0 flex-1 flex-col">
+        <header className="sticky top-0 z-10 flex items-center gap-3 border-b bg-background/95 px-4 py-3 backdrop-blur md:px-6">
+          <span className="font-bold md:hidden">Ploder Admin</span>
+          <span className="hidden text-sm font-semibold md:inline">
+            {activeLabel}
+          </span>
+          <nav className="ml-auto flex items-center gap-1 overflow-x-auto md:hidden">
             {navItems.map((item) => (
               <Link
                 key={item.to}
                 to={item.to}
-                activeProps={{ className: "font-bold underline" }}
-                className="opacity-70 hover:opacity-100"
+                activeProps={{ className: "bg-accent text-accent-foreground" }}
+                className="rounded-md p-2 text-muted-foreground hover:bg-accent"
               >
-                {item.label}
+                <item.icon className="size-4" />
               </Link>
             ))}
-          </nav>
-          <div className="ml-auto flex items-center gap-2">
             <UserButton />
-          </div>
-        </div>
-      </header>
-      <main className="mx-auto max-w-6xl p-4">
-        <Outlet />
-      </main>
+          </nav>
+        </header>
+        <main className="flex-1 p-4 md:p-6">
+          <Outlet />
+        </main>
+      </div>
     </div>
   );
-}
-
-export function useApi<T>(path: string | null, deps: unknown[] = []) {
-  const [nonce, setNonce] = useState(0);
-  const [state, setState] = useState<{
-    data: T | null;
-    loading: boolean;
-    error: string | null;
-  }>({ data: null, loading: true, error: null });
-
-  // biome-ignore lint/correctness/useExhaustiveDependencies: nonce is a refetch trigger
-  useEffect(() => {
-    if (!path) {
-      return;
-    }
-    setState((previous) => ({ ...previous, loading: true, error: null }));
-    apiFetch<T>(path)
-      .then((data) => setState({ data, loading: false, error: null }))
-      .catch((error) =>
-        setState({ data: null, loading: false, error: formatError(error) }),
-      );
-  }, [path, nonce, ...deps]);
-
-  return { ...state, refetch: () => setNonce((current) => current + 1) };
 }
