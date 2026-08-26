@@ -26,11 +26,14 @@ export const equipmentSchema = z.enum([
 ]);
 
 // Exercises
+export const imageUrlSchema = z.string().url().max(2048).nullable().optional();
+
 export const exerciseCreateSchema = z.object({
   name: z.string().min(1).max(120),
   muscleGroup: muscleGroupSchema,
   equipment: equipmentSchema,
   isCompound: z.boolean().default(false),
+  imageUrl: imageUrlSchema,
 });
 
 export const exerciseUpdateSchema = exerciseCreateSchema.partial();

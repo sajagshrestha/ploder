@@ -56,6 +56,7 @@ export const exercises = pgTable("exercises", {
   muscleGroup: muscleGroupEnum("muscle_group").notNull(),
   equipment: equipmentEnum("equipment").notNull(),
   isCompound: boolean("is_compound").default(false).notNull(),
+  imageUrl: text("image_url"),
 });
 
 export const splits = pgTable("splits", {

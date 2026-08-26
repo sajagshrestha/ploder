@@ -5,6 +5,7 @@ import {
   getCoreRowModel,
   useLegacyTable as useReactTable,
 } from "@tanstack/react-table/legacy";
+import { Dumbbell } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -76,7 +77,26 @@ type ExerciseValues = {
   muscleGroup: Exercise["muscleGroup"];
   equipment: Exercise["equipment"];
   isCompound: boolean;
+  imageUrl: string | null;
 };
+
+function ExerciseImage({ url, name }: { url: string | null; name: string }) {
+  if (!url) {
+    return (
+      <div className="flex size-10 shrink-0 items-center justify-center rounded-md bg-muted text-muted-foreground">
+        <Dumbbell className="size-5" />
+      </div>
+    );
+  }
+  return (
+    <img
+      alt={name}
+      className="size-10 shrink-0 rounded-md object-cover"
+      loading="lazy"
+      src={url}
+    />
+  );
+}
 
 function AdminExercises() {
   const [page, setPage] = useState(1);
@@ -98,6 +118,13 @@ function AdminExercises() {
   const deleteExercise = useDeleteExercise();
 
   const columns: ColumnDef<Exercise>[] = [
+    {
+      id: "image",
+      header: () => <span className="sr-only">Image</span>,
+      cell: ({ row }) => (
+        <ExerciseImage name={row.original.name} url={row.original.imageUrl} />
+      ),
+    },
     { accessorKey: "name", header: "Name" },
     {
       accessorKey: "muscleGroup",
@@ -405,6 +432,7 @@ function ExerciseForm({
     muscleGroup: initial?.muscleGroup ?? "chest",
     equipment: initial?.equipment ?? "barbell",
     isCompound: initial?.isCompound ?? false,
+    imageUrl: initial?.imageUrl ?? "",
   });
 
   return (
@@ -485,6 +513,20 @@ function ExerciseForm({
         />
         Compound exercise
       </label>
+      <div className="space-y-2">
+        <Label htmlFor="exercise-image">Image URL</Label>
+        <Input
+          id="exercise-image"
+          placeholder="https://…"
+          value={values.imageUrl ?? ""}
+          onChange={(event) =>
+            setValues({
+              ...values,
+              imageUrl: event.target.value.trim() || null,
+            })
+          }
+        />
+      </div>
       <Button className="w-full" disabled={saving} type="submit">
         {saving ? "Saving…" : "Save exercise"}
       </Button>

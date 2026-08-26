@@ -3,6 +3,7 @@ import { eq } from "drizzle-orm";
 import { db } from "./index";
 import { exercises, splitDayExercises, splitDays, splits } from "./schema";
 import { seedExercises } from "./seed-data/exercises";
+import { seedImageMap } from "./seed-data/image-map";
 import { seedSplits } from "./seed-data/splits";
 
 try {
@@ -18,7 +19,15 @@ if (!process.env.DATABASE_URL) {
 
 async function seed() {
   console.log(`Seeding ${seedExercises.length} exercises...`);
-  await db.insert(exercises).values(seedExercises).onConflictDoNothing();
+  await db
+    .insert(exercises)
+    .values(
+      seedExercises.map((exercise) => ({
+        ...exercise,
+        imageUrl: seedImageMap[exercise.name] ?? null,
+      })),
+    )
+    .onConflictDoNothing();
 
   const exerciseRows = await db
     .select({ id: exercises.id, name: exercises.name })

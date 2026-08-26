@@ -27,6 +27,7 @@ export type Exercise = {
     | "core";
   equipment: "barbell" | "dumbbell" | "machine" | "cable" | "bodyweight";
   isCompound: boolean;
+  imageUrl: string | null;
 };
 
 export type Split = {
