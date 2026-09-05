@@ -12,23 +12,21 @@ import {
   unique,
 } from "drizzle-orm/pg-core";
 
-export const muscleGroupEnum = pgEnum("muscle_group", [
-  "chest",
+// Exercise catalog mirrors https://github.com/hasaneyldrm/exercises-dataset
+// (10 body-part categories, 29 equipment types), so muscle group and
+// equipment are free-form text rather than fixed enums.
+export const exerciseCategories = [
+  "upper arms",
+  "upper legs",
   "back",
+  "waist",
+  "chest",
   "shoulders",
-  "arms",
-  "legs",
-  "glutes",
-  "core",
-]);
-
-export const equipmentEnum = pgEnum("equipment", [
-  "barbell",
-  "dumbbell",
-  "machine",
-  "cable",
-  "bodyweight",
-]);
+  "lower legs",
+  "lower arms",
+  "cardio",
+  "neck",
+] as const;
 
 export const unitEnum = pgEnum("unit", ["kg", "lb"]);
 
@@ -52,9 +50,15 @@ export const users = pgTable("users", {
 
 export const exercises = pgTable("exercises", {
   id: serial("id").primaryKey(),
+  externalId: text("external_id").unique(),
   name: text("name").notNull().unique(),
-  muscleGroup: muscleGroupEnum("muscle_group").notNull(),
-  equipment: equipmentEnum("equipment").notNull(),
+  alias: text("alias"),
+  muscleGroup: text("muscle_group").notNull(),
+  equipment: text("equipment").notNull(),
+  target: text("target"),
+  secondaryMuscles: text("secondary_muscles"),
+  instructionsEn: text("instructions_en"),
+  gifUrl: text("gif_url"),
   isCompound: boolean("is_compound").default(false).notNull(),
   imageUrl: text("image_url"),
 });
@@ -148,6 +152,26 @@ export const bodyWeights = pgTable(
   },
   (table) => [
     unique("body_weights_user_date_unique").on(table.userId, table.recordedAt),
+  ],
+);
+
+// Dedupes retried / replayed mutations: the client sends a stable
+// Idempotency-Key per logical operation (including offline-outbox replays),
+// and the server replays the stored response instead of applying twice.
+export const idempotencyKeys = pgTable(
+  "idempotency_keys",
+  {
+    id: serial("id").primaryKey(),
+    key: text("key").notNull(),
+    userId: integer("user_id")
+      .references(() => users.id, { onDelete: "cascade" })
+      .notNull(),
+    status: integer("status").notNull(),
+    body: text("body").notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (table) => [
+    unique("idempotency_keys_key_user_unique").on(table.key, table.userId),
   ],
 );
 

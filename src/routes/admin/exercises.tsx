@@ -56,26 +56,58 @@ export const Route = createFileRoute("/admin/exercises")({
 });
 
 const MUSCLE_GROUPS = [
-  "chest",
+  "upper arms",
+  "upper legs",
   "back",
+  "waist",
+  "chest",
   "shoulders",
-  "arms",
-  "legs",
-  "glutes",
-  "core",
+  "lower legs",
+  "lower arms",
+  "cardio",
+  "neck",
 ] as const;
 const EQUIPMENT = [
+  "assisted",
+  "band",
   "barbell",
-  "dumbbell",
-  "machine",
+  "body weight",
+  "bosu ball",
   "cable",
-  "bodyweight",
+  "dumbbell",
+  "elliptical machine",
+  "ez barbell",
+  "hammer",
+  "kettlebell",
+  "leverage machine",
+  "medicine ball",
+  "olympic barbell",
+  "resistance band",
+  "roller",
+  "rope",
+  "skierg machine",
+  "sled machine",
+  "smith machine",
+  "stability ball",
+  "stationary bike",
+  "stepmill machine",
+  "tire",
+  "trap bar",
+  "upper body ergometer",
+  "weighted",
+  "wheel roller",
 ] as const;
 
 type ExerciseValues = {
   name: string;
+  alias: string | null;
   muscleGroup: Exercise["muscleGroup"];
   equipment: Exercise["equipment"];
+  target: string | null;
+  secondaryMuscles: string | null;
+  instructionsEn: string | null;
+  gifUrl: string | null;
+  externalId: string | null;
   isCompound: boolean;
   imageUrl: string | null;
 };
@@ -89,12 +121,14 @@ function ExerciseImage({ url, name }: { url: string | null; name: string }) {
     );
   }
   return (
-    <img
-      alt={name}
-      className="size-10 shrink-0 rounded-md object-cover"
-      loading="lazy"
-      src={url}
-    />
+    <div className="size-10 shrink-0 overflow-hidden rounded-md bg-white">
+      <img
+        alt={name}
+        className="size-full object-cover mix-blend-multiply"
+        loading="lazy"
+        src={url}
+      />
+    </div>
   );
 }
 
@@ -125,7 +159,20 @@ function AdminExercises() {
         <ExerciseImage name={row.original.name} url={row.original.imageUrl} />
       ),
     },
-    { accessorKey: "name", header: "Name" },
+    {
+      accessorKey: "name",
+      header: "Name",
+      cell: ({ row }) => (
+        <div>
+          <p className="font-medium">{row.original.name}</p>
+          {row.original.alias && (
+            <p className="text-xs text-muted-foreground">
+              Also: {row.original.alias}
+            </p>
+          )}
+        </div>
+      ),
+    },
     {
       accessorKey: "muscleGroup",
       header: "Muscle group",
@@ -229,13 +276,14 @@ function AdminExercises() {
     : 1;
 
   return (
-    <div className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-3">
+    <div className="overview-page">
+      <div className="page-heading">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Exercises</h1>
-          <p className="text-sm text-muted-foreground">
-            Manage the global exercise catalog.
-          </p>
+          <p className="eyebrow">EXERCISE LIBRARY</p>
+          <h1>
+            Every move, curated<span className="heading-dot">.</span>
+          </h1>
+          <p>Manage the global exercise catalog members train from.</p>
         </div>
         <Button
           onClick={() => {
@@ -297,7 +345,10 @@ function AdminExercises() {
         </Select>
       </div>
 
-      <div className="rounded-lg border">
+      <section
+        className="dashboard-panel"
+        style={{ padding: 0, overflow: "hidden" }}
+      >
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
@@ -348,7 +399,7 @@ function AdminExercises() {
             )}
           </TableBody>
         </Table>
-      </div>
+      </section>
 
       <div className="flex items-center justify-between text-sm text-muted-foreground">
         <span>
@@ -405,10 +456,7 @@ function AdminExercises() {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              className="bg-destructive text-white hover:bg-destructive/90"
-              onClick={handleDelete}
-            >
+            <AlertDialogAction variant="destructive" onClick={handleDelete}>
               Delete
             </AlertDialogAction>
           </AlertDialogFooter>
@@ -429,8 +477,14 @@ function ExerciseForm({
 }) {
   const [values, setValues] = useState<ExerciseValues>({
     name: initial?.name ?? "",
+    alias: initial?.alias ?? null,
     muscleGroup: initial?.muscleGroup ?? "chest",
-    equipment: initial?.equipment ?? "barbell",
+    equipment: initial?.equipment ?? "body weight",
+    target: initial?.target ?? null,
+    secondaryMuscles: initial?.secondaryMuscles ?? null,
+    instructionsEn: initial?.instructionsEn ?? null,
+    gifUrl: initial?.gifUrl ?? null,
+    externalId: initial?.externalId ?? null,
     isCompound: initial?.isCompound ?? false,
     imageUrl: initial?.imageUrl ?? "",
   });
@@ -451,6 +505,20 @@ function ExerciseForm({
           value={values.name}
           onChange={(event) =>
             setValues({ ...values, name: event.target.value })
+          }
+        />
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="exercise-alias">Aliases (comma-separated)</Label>
+        <Input
+          id="exercise-alias"
+          placeholder="Pec Deck, Chest Fly, …"
+          value={values.alias ?? ""}
+          onChange={(event) =>
+            setValues({
+              ...values,
+              alias: event.target.value.trim() || null,
+            })
           }
         />
       </div>

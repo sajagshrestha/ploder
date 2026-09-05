@@ -127,12 +127,15 @@ function AdminUsers() {
     : 1;
 
   return (
-    <div className="space-y-4">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">Users</h1>
-        <p className="text-sm text-muted-foreground">
-          Manage user accounts and permissions.
-        </p>
+    <div className="overview-page">
+      <div className="page-heading">
+        <div>
+          <p className="eyebrow">COMMUNITY</p>
+          <h1>
+            Members & roles<span className="heading-dot">.</span>
+          </h1>
+          <p>Manage user accounts and permissions.</p>
+        </div>
       </div>
 
       <Input
@@ -145,7 +148,10 @@ function AdminUsers() {
         }}
       />
 
-      <div className="rounded-lg border">
+      <section
+        className="dashboard-panel"
+        style={{ padding: 0, overflow: "hidden" }}
+      >
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
@@ -196,7 +202,7 @@ function AdminUsers() {
             )}
           </TableBody>
         </Table>
-      </div>
+      </section>
 
       <div className="flex items-center justify-between text-sm text-muted-foreground">
         <span>
@@ -297,10 +303,7 @@ function DeleteUserDialog({
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction
-            className="bg-destructive text-white hover:bg-destructive/90"
-            onClick={onConfirm}
-          >
+          <AlertDialogAction variant="destructive" onClick={onConfirm}>
             Delete
           </AlertDialogAction>
         </AlertDialogFooter>

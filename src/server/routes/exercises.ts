@@ -1,4 +1,4 @@
-import { and, asc, count, eq, ilike } from "drizzle-orm";
+import { and, asc, count, eq, ilike, or } from "drizzle-orm";
 import { Hono } from "hono";
 
 import { db } from "#/db";
@@ -18,7 +18,11 @@ export const exercisesRoutes = new Hono<AppEnv>()
     const filters = [
       query.muscleGroup && eq(exercises.muscleGroup, query.muscleGroup),
       query.equipment && eq(exercises.equipment, query.equipment),
-      query.search && ilike(exercises.name, `%${query.search}%`),
+      query.search &&
+        or(
+          ilike(exercises.name, `%${query.search}%`),
+          ilike(exercises.alias, `%${query.search}%`),
+        ),
     ].filter(Boolean);
 
     const [rows, [{ value: total }]] = await Promise.all([

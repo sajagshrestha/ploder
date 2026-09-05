@@ -26,15 +26,21 @@ function AdminWorkouts() {
     : 1;
 
   return (
-    <div className="space-y-4">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">Workouts</h1>
-        <p className="text-sm text-muted-foreground">
-          Read-only view of all logged workouts.
-        </p>
+    <div className="overview-page">
+      <div className="page-heading">
+        <div>
+          <p className="eyebrow">LOGGED SESSIONS</p>
+          <h1>
+            Every workout<span className="heading-dot">.</span>
+          </h1>
+          <p>Read-only view of all logged workouts.</p>
+        </div>
       </div>
 
-      <div className="rounded-lg border">
+      <section
+        className="dashboard-panel"
+        style={{ padding: 0, overflow: "hidden" }}
+      >
         <Table>
           <TableHeader>
             <TableRow>
@@ -87,7 +93,7 @@ function AdminWorkouts() {
             )}
           </TableBody>
         </Table>
-      </div>
+      </section>
 
       <TablePagination
         page={page}

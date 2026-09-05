@@ -26,15 +26,21 @@ function AdminBodyWeights() {
     : 1;
 
   return (
-    <div className="space-y-4">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">Body weight</h1>
-        <p className="text-sm text-muted-foreground">
-          Read-only view of all body weight entries.
-        </p>
+    <div className="overview-page">
+      <div className="page-heading">
+        <div>
+          <p className="eyebrow">PROGRESS DATA</p>
+          <h1>
+            Body weight<span className="heading-dot">.</span>
+          </h1>
+          <p>Read-only view of all body weight entries.</p>
+        </div>
       </div>
 
-      <div className="rounded-lg border">
+      <section
+        className="dashboard-panel"
+        style={{ padding: 0, overflow: "hidden" }}
+      >
         <Table>
           <TableHeader>
             <TableRow>
@@ -71,7 +77,7 @@ function AdminBodyWeights() {
             )}
           </TableBody>
         </Table>
-      </div>
+      </section>
 
       <TablePagination
         page={page}

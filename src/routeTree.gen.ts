@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminRouteImport } from './routes/admin'
+import { Route as AppRouteImport } from './routes/app'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as AdminBodyWeightsRouteImport } from './routes/admin/body-weights'
 import { Route as AdminExercisesRouteImport } from './routes/admin/exercises'
@@ -18,8 +19,17 @@ import { Route as AdminSplitsRouteImport } from './routes/admin/splits'
 import { Route as AdminUsersRouteImport } from './routes/admin/users'
 import { Route as AdminWorkoutsRouteImport } from './routes/admin/workouts'
 import { Route as ApiSplatRouteImport } from './routes/api.$'
+import { Route as AppIndexRouteImport } from './routes/app/index'
+import { Route as AppExercisesRouteImport } from './routes/app/exercises'
+import { Route as AppHistoryRouteImport } from './routes/app/history'
+import { Route as AppProgressRouteImport } from './routes/app/progress'
+import { Route as AppSplitsRouteImport } from './routes/app/splits'
+import { Route as AppTrainRouteImport } from './routes/app/train'
+import { Route as AppWeightRouteImport } from './routes/app/weight'
 import { Route as SignInSplatRouteImport } from './routes/sign-in.$'
 import { Route as SignUpSplatRouteImport } from './routes/sign-up.$'
+import { Route as AppHistoryIdRouteImport } from './routes/app/history.$id'
+import { Route as AppSplitsIdRouteImport } from './routes/app/splits.$id'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -29,6 +39,11 @@ const IndexRoute = IndexRouteImport.update({
 const AdminRoute = AdminRouteImport.update({
   id: '/admin',
   path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AppRoute = AppRouteImport.update({
+  id: '/app',
+  path: '/app',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminIndexRoute = AdminIndexRouteImport.update({
@@ -66,6 +81,41 @@ const ApiSplatRoute = ApiSplatRouteImport.update({
   path: '/api/$',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AppIndexRoute = AppIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppExercisesRoute = AppExercisesRouteImport.update({
+  id: '/exercises',
+  path: '/exercises',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppHistoryRoute = AppHistoryRouteImport.update({
+  id: '/history',
+  path: '/history',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppProgressRoute = AppProgressRouteImport.update({
+  id: '/progress',
+  path: '/progress',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppSplitsRoute = AppSplitsRouteImport.update({
+  id: '/splits',
+  path: '/splits',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppTrainRoute = AppTrainRouteImport.update({
+  id: '/train',
+  path: '/train',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppWeightRoute = AppWeightRouteImport.update({
+  id: '/weight',
+  path: '/weight',
+  getParentRoute: () => AppRoute,
+} as any)
 const SignInSplatRoute = SignInSplatRouteImport.update({
   id: '/sign-in/$',
   path: '/sign-in/$',
@@ -76,19 +126,39 @@ const SignUpSplatRoute = SignUpSplatRouteImport.update({
   path: '/sign-up/$',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AppHistoryIdRoute = AppHistoryIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => AppHistoryRoute,
+} as any)
+const AppSplitsIdRoute = AppSplitsIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => AppSplitsRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
+  '/app': typeof AppRouteWithChildren
   '/admin/body-weights': typeof AdminBodyWeightsRoute
   '/admin/exercises': typeof AdminExercisesRoute
   '/admin/splits': typeof AdminSplitsRoute
   '/admin/users': typeof AdminUsersRoute
   '/admin/workouts': typeof AdminWorkoutsRoute
   '/api/$': typeof ApiSplatRoute
+  '/app/exercises': typeof AppExercisesRoute
+  '/app/history': typeof AppHistoryRouteWithChildren
+  '/app/progress': typeof AppProgressRoute
+  '/app/splits': typeof AppSplitsRouteWithChildren
+  '/app/train': typeof AppTrainRoute
+  '/app/weight': typeof AppWeightRoute
   '/sign-in/$': typeof SignInSplatRoute
   '/sign-up/$': typeof SignUpSplatRoute
   '/admin/': typeof AdminIndexRoute
+  '/app/': typeof AppIndexRoute
+  '/app/history/$id': typeof AppHistoryIdRoute
+  '/app/splits/$id': typeof AppSplitsIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -98,38 +168,67 @@ export interface FileRoutesByTo {
   '/admin/users': typeof AdminUsersRoute
   '/admin/workouts': typeof AdminWorkoutsRoute
   '/api/$': typeof ApiSplatRoute
+  '/app/exercises': typeof AppExercisesRoute
+  '/app/history': typeof AppHistoryRouteWithChildren
+  '/app/progress': typeof AppProgressRoute
+  '/app/splits': typeof AppSplitsRouteWithChildren
+  '/app/train': typeof AppTrainRoute
+  '/app/weight': typeof AppWeightRoute
   '/sign-in/$': typeof SignInSplatRoute
   '/sign-up/$': typeof SignUpSplatRoute
   '/admin': typeof AdminIndexRoute
+  '/app': typeof AppIndexRoute
+  '/app/history/$id': typeof AppHistoryIdRoute
+  '/app/splits/$id': typeof AppSplitsIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
+  '/app': typeof AppRouteWithChildren
   '/admin/body-weights': typeof AdminBodyWeightsRoute
   '/admin/exercises': typeof AdminExercisesRoute
   '/admin/splits': typeof AdminSplitsRoute
   '/admin/users': typeof AdminUsersRoute
   '/admin/workouts': typeof AdminWorkoutsRoute
   '/api/$': typeof ApiSplatRoute
+  '/app/exercises': typeof AppExercisesRoute
+  '/app/history': typeof AppHistoryRouteWithChildren
+  '/app/progress': typeof AppProgressRoute
+  '/app/splits': typeof AppSplitsRouteWithChildren
+  '/app/train': typeof AppTrainRoute
+  '/app/weight': typeof AppWeightRoute
   '/sign-in/$': typeof SignInSplatRoute
   '/sign-up/$': typeof SignUpSplatRoute
   '/admin/': typeof AdminIndexRoute
+  '/app/': typeof AppIndexRoute
+  '/app/history/$id': typeof AppHistoryIdRoute
+  '/app/splits/$id': typeof AppSplitsIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
     | '/admin'
+    | '/app'
     | '/admin/body-weights'
     | '/admin/exercises'
     | '/admin/splits'
     | '/admin/users'
     | '/admin/workouts'
     | '/api/$'
+    | '/app/exercises'
+    | '/app/history'
+    | '/app/progress'
+    | '/app/splits'
+    | '/app/train'
+    | '/app/weight'
     | '/sign-in/$'
     | '/sign-up/$'
     | '/admin/'
+    | '/app/'
+    | '/app/history/$id'
+    | '/app/splits/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -139,27 +238,47 @@ export interface FileRouteTypes {
     | '/admin/users'
     | '/admin/workouts'
     | '/api/$'
+    | '/app/exercises'
+    | '/app/history'
+    | '/app/progress'
+    | '/app/splits'
+    | '/app/train'
+    | '/app/weight'
     | '/sign-in/$'
     | '/sign-up/$'
     | '/admin'
+    | '/app'
+    | '/app/history/$id'
+    | '/app/splits/$id'
   id:
     | '__root__'
     | '/'
     | '/admin'
+    | '/app'
     | '/admin/body-weights'
     | '/admin/exercises'
     | '/admin/splits'
     | '/admin/users'
     | '/admin/workouts'
     | '/api/$'
+    | '/app/exercises'
+    | '/app/history'
+    | '/app/progress'
+    | '/app/splits'
+    | '/app/train'
+    | '/app/weight'
     | '/sign-in/$'
     | '/sign-up/$'
     | '/admin/'
+    | '/app/'
+    | '/app/history/$id'
+    | '/app/splits/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRouteWithChildren
+  AppRoute: typeof AppRouteWithChildren
   ApiSplatRoute: typeof ApiSplatRoute
   SignInSplatRoute: typeof SignInSplatRoute
   SignUpSplatRoute: typeof SignUpSplatRoute
@@ -179,6 +298,13 @@ declare module '@tanstack/react-router' {
       path: '/admin'
       fullPath: '/admin'
       preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/app': {
+      id: '/app'
+      path: '/app'
+      fullPath: '/app'
+      preLoaderRoute: typeof AppRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/': {
@@ -230,6 +356,55 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/app/': {
+      id: '/app/'
+      path: '/'
+      fullPath: '/app/'
+      preLoaderRoute: typeof AppIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/exercises': {
+      id: '/app/exercises'
+      path: '/exercises'
+      fullPath: '/app/exercises'
+      preLoaderRoute: typeof AppExercisesRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/history': {
+      id: '/app/history'
+      path: '/history'
+      fullPath: '/app/history'
+      preLoaderRoute: typeof AppHistoryRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/progress': {
+      id: '/app/progress'
+      path: '/progress'
+      fullPath: '/app/progress'
+      preLoaderRoute: typeof AppProgressRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/splits': {
+      id: '/app/splits'
+      path: '/splits'
+      fullPath: '/app/splits'
+      preLoaderRoute: typeof AppSplitsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/train': {
+      id: '/app/train'
+      path: '/train'
+      fullPath: '/app/train'
+      preLoaderRoute: typeof AppTrainRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/weight': {
+      id: '/app/weight'
+      path: '/weight'
+      fullPath: '/app/weight'
+      preLoaderRoute: typeof AppWeightRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/sign-in/$': {
       id: '/sign-in/$'
       path: '/sign-in/$'
@@ -243,6 +418,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/sign-up/$'
       preLoaderRoute: typeof SignUpSplatRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/app/history/$id': {
+      id: '/app/history/$id'
+      path: '/$id'
+      fullPath: '/app/history/$id'
+      preLoaderRoute: typeof AppHistoryIdRouteImport
+      parentRoute: typeof AppHistoryRoute
+    }
+    '/app/splits/$id': {
+      id: '/app/splits/$id'
+      path: '/$id'
+      fullPath: '/app/splits/$id'
+      preLoaderRoute: typeof AppSplitsIdRouteImport
+      parentRoute: typeof AppSplitsRoute
     }
   }
 }
@@ -267,9 +456,56 @@ const AdminRouteChildren: AdminRouteChildren = {
 
 const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 
+interface AppHistoryRouteChildren {
+  AppHistoryIdRoute: typeof AppHistoryIdRoute
+}
+
+const AppHistoryRouteChildren: AppHistoryRouteChildren = {
+  AppHistoryIdRoute: AppHistoryIdRoute,
+}
+
+const AppHistoryRouteWithChildren = AppHistoryRoute._addFileChildren(
+  AppHistoryRouteChildren,
+)
+
+interface AppSplitsRouteChildren {
+  AppSplitsIdRoute: typeof AppSplitsIdRoute
+}
+
+const AppSplitsRouteChildren: AppSplitsRouteChildren = {
+  AppSplitsIdRoute: AppSplitsIdRoute,
+}
+
+const AppSplitsRouteWithChildren = AppSplitsRoute._addFileChildren(
+  AppSplitsRouteChildren,
+)
+
+interface AppRouteChildren {
+  AppExercisesRoute: typeof AppExercisesRoute
+  AppHistoryRoute: typeof AppHistoryRouteWithChildren
+  AppProgressRoute: typeof AppProgressRoute
+  AppSplitsRoute: typeof AppSplitsRouteWithChildren
+  AppTrainRoute: typeof AppTrainRoute
+  AppWeightRoute: typeof AppWeightRoute
+  AppIndexRoute: typeof AppIndexRoute
+}
+
+const AppRouteChildren: AppRouteChildren = {
+  AppExercisesRoute: AppExercisesRoute,
+  AppHistoryRoute: AppHistoryRouteWithChildren,
+  AppProgressRoute: AppProgressRoute,
+  AppSplitsRoute: AppSplitsRouteWithChildren,
+  AppTrainRoute: AppTrainRoute,
+  AppWeightRoute: AppWeightRoute,
+  AppIndexRoute: AppIndexRoute,
+}
+
+const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRouteWithChildren,
+  AppRoute: AppRouteWithChildren,
   ApiSplatRoute: ApiSplatRoute,
   SignInSplatRoute: SignInSplatRoute,
   SignUpSplatRoute: SignUpSplatRoute,

@@ -4,6 +4,7 @@ import { ZodError } from "zod";
 import { type AppEnv, requireAuth } from "#/server/auth";
 import { bodyWeightsRoutes } from "#/server/routes/bodyWeights";
 import { exercisesRoutes } from "#/server/routes/exercises";
+import { myRoutes } from "#/server/routes/my";
 import { splitsRoutes } from "#/server/routes/splits";
 import { statsRoutes } from "#/server/routes/stats";
 import { usersRoutes } from "#/server/routes/users";
@@ -30,4 +31,5 @@ export const api = new Hono<AppEnv>()
   .route("/users", usersRoutes)
   .route("/workouts", workoutsRoutes)
   .route("/body-weights", bodyWeightsRoutes)
-  .route("/stats", statsRoutes);
+  .route("/stats", statsRoutes)
+  .route("/my", myRoutes);

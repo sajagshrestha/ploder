@@ -1,41 +1,45 @@
-import { Moon, Palette, Sun } from "lucide-react";
+import { Check, Monitor, Moon, Palette, Sun } from "lucide-react";
 import { createContext, useContext, useEffect, useState } from "react";
-
 import { Button } from "@/components/ui/button";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuLabel,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-
-type ThemeMode = "light" | "dark" | "system";
-type Accent = "neutral" | "violet" | "blue" | "emerald" | "amber";
-
-const THEME_KEY = "ploder-theme";
-const ACCENT_KEY = "ploder-accent";
-
-export const ACCENTS: { value: Accent; label: string; swatch: string }[] = [
-  { value: "neutral", label: "Neutral", swatch: "#171717" },
-  { value: "violet", label: "Violet", swatch: "#7c5cff" },
-  { value: "blue", label: "Blue", swatch: "#3b82f6" },
-  { value: "emerald", label: "Emerald", swatch: "#10b981" },
-  { value: "amber", label: "Amber", swatch: "#f59e0b" },
-];
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  PALETTE_KEY,
+  PALETTES,
+  resolveMode,
+  resolvePalette,
+  THEME_KEY,
+  type ThemeMode,
+  type ThemePalette,
+} from "@/lib/theme-preferences";
 
 type ThemeContextValue = {
   mode: ThemeMode;
   setMode: (mode: ThemeMode) => void;
-  accent: Accent;
-  setAccent: (accent: Accent) => void;
+  palette: ThemePalette;
+  setPalette: (palette: ThemePalette) => void;
 };
-
 const ThemeContext = createContext<ThemeContextValue | null>(null);
-
-function applyTheme(mode: ThemeMode, accent: Accent) {
+function readPreferences() {
+  try {
+    return {
+      mode: resolveMode(localStorage.getItem(THEME_KEY)),
+      palette: resolvePalette(
+        localStorage.getItem(PALETTE_KEY),
+        localStorage.getItem("ploder-accent"),
+      ),
+    };
+  } catch {
+    return { mode: "system" as const, palette: "lime" as const };
+  }
+}
+function applyTheme(mode: ThemeMode, palette: ThemePalette) {
   const root = document.documentElement;
   const dark =
     mode === "dark" ||
@@ -43,116 +47,160 @@ function applyTheme(mode: ThemeMode, accent: Accent) {
       window.matchMedia("(prefers-color-scheme: dark)").matches);
   root.classList.toggle("dark", dark);
   root.style.colorScheme = dark ? "dark" : "light";
-  if (accent === "neutral") {
-    delete root.dataset.accent;
-  } else {
-    root.dataset.accent = accent;
-  }
+  root.dataset.palette = palette;
+  delete root.dataset.accent;
+  const color = getComputedStyle(root).getPropertyValue("--background").trim();
+  for (const meta of document.querySelectorAll<HTMLMetaElement>(
+    'meta[name="theme-color"]',
+  ))
+    meta.content = color;
 }
-
-function initialMode(): ThemeMode {
-  if (typeof window === "undefined") {
-    return "system";
-  }
-  const stored = localStorage.getItem(THEME_KEY);
-  return stored === "light" || stored === "dark" || stored === "system"
-    ? stored
-    : "system";
-}
-
-function initialAccent(): Accent {
-  if (typeof window === "undefined") {
-    return "neutral";
-  }
-  const stored = localStorage.getItem(ACCENT_KEY);
-  return ACCENTS.some((accent) => accent.value === stored)
-    ? (stored as Accent)
-    : "neutral";
-}
-
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [mode, setMode] = useState<ThemeMode>(initialMode);
-  const [accent, setAccent] = useState<Accent>(initialAccent);
-
+  const [mode, setMode] = useState<ThemeMode>("system");
+  const [palette, setPalette] = useState<ThemePalette>("lime");
+  const [ready, setReady] = useState(false);
   useEffect(() => {
-    applyTheme(mode, accent);
-    localStorage.setItem(THEME_KEY, mode);
-    localStorage.setItem(ACCENT_KEY, accent);
-  }, [mode, accent]);
-
+    const read = () => {
+      const settings = readPreferences();
+      setMode(settings.mode);
+      setPalette(settings.palette);
+    };
+    read();
+    setReady(true);
+    const sync = (event: StorageEvent) => {
+      if (
+        event.key === THEME_KEY ||
+        event.key === PALETTE_KEY ||
+        event.key === null
+      )
+        read();
+    };
+    window.addEventListener("storage", sync);
+    return () => window.removeEventListener("storage", sync);
+  }, []);
   useEffect(() => {
-    if (mode !== "system") {
-      return;
+    if (!ready) return;
+    applyTheme(mode, palette);
+    try {
+      localStorage.setItem(THEME_KEY, mode);
+      localStorage.setItem(PALETTE_KEY, palette);
+      localStorage.removeItem("ploder-accent");
+    } catch {
+      /* Keep the selection usable when storage is unavailable. */
     }
+    if (mode !== "system") return;
     const media = window.matchMedia("(prefers-color-scheme: dark)");
-    const listener = () => applyTheme("system", accent);
+    const listener = () => applyTheme("system", palette);
     media.addEventListener("change", listener);
     return () => media.removeEventListener("change", listener);
-  }, [mode, accent]);
-
+  }, [mode, palette, ready]);
   return (
-    <ThemeContext.Provider value={{ mode, setMode, accent, setAccent }}>
+    <ThemeContext.Provider value={{ mode, setMode, palette, setPalette }}>
       {children}
     </ThemeContext.Provider>
   );
 }
-
 export function useTheme() {
   const context = useContext(ThemeContext);
-  if (!context) {
-    throw new Error("useTheme must be used within ThemeProvider");
-  }
+  if (!context) throw new Error("useTheme must be used within ThemeProvider");
   return context;
 }
-
+const modes = [
+  { value: "light", label: "Light", icon: Sun },
+  { value: "dark", label: "Dark", icon: Moon },
+  { value: "system", label: "System", icon: Monitor },
+] as const;
 export function ThemeToggle() {
-  const { mode, setMode, accent, setAccent } = useTheme();
-
+  const { mode, setMode, palette, setPalette } = useTheme();
+  const [open, setOpen] = useState(false);
   return (
-    <div className="flex items-center gap-1">
-      <Button
-        aria-label="Toggle dark mode"
-        onClick={() => setMode(mode === "dark" ? "light" : "dark")}
-        size="icon"
-        variant="ghost"
-      >
-        <Moon className="hidden size-4 dark:block" />
-        <Sun className="block size-4 dark:hidden" />
-      </Button>
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button aria-label="Change accent color" size="icon" variant="ghost">
-            <Palette className="size-4" />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-44">
-          <DropdownMenuLabel>Appearance</DropdownMenuLabel>
-          <DropdownMenuRadioGroup
-            onValueChange={(value) => setMode(value as ThemeMode)}
-            value={mode}
-          >
-            <DropdownMenuRadioItem value="light">Light</DropdownMenuRadioItem>
-            <DropdownMenuRadioItem value="dark">Dark</DropdownMenuRadioItem>
-            <DropdownMenuRadioItem value="system">System</DropdownMenuRadioItem>
-          </DropdownMenuRadioGroup>
-          <DropdownMenuSeparator />
-          <DropdownMenuLabel>Accent</DropdownMenuLabel>
-          <DropdownMenuRadioGroup
-            onValueChange={(value) => setAccent(value as Accent)}
-            value={accent}
-          >
-            {ACCENTS.map((item) => (
-              <DropdownMenuRadioItem key={item.value} value={item.value}>
-                <span
-                  className="mr-1 inline-block size-3 rounded-full"
-                  style={{ backgroundColor: item.swatch }}
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button
+          variant="ghost"
+          className="appearance-trigger"
+          aria-label="Customize appearance"
+        >
+          <Palette size={17} /> Appearance
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="appearance-dialog sm:max-w-lg">
+        <DialogHeader>
+          <DialogTitle>Make it yours</DialogTitle>
+          <DialogDescription>
+            A palette for your pace. Preview changes instantly.
+          </DialogDescription>
+        </DialogHeader>
+        <fieldset className="appearance-fieldset">
+          <legend>Display</legend>
+          <div className="appearance-modes">
+            {modes.map(({ value, label, icon: Icon }) => (
+              <label key={value} data-selected={mode === value}>
+                <input
+                  type="radio"
+                  name="display-mode"
+                  value={value}
+                  checked={mode === value}
+                  onChange={() => setMode(value)}
                 />
-                {item.label}
-              </DropdownMenuRadioItem>
+                <Icon size={17} />
+                <span>{label}</span>
+              </label>
             ))}
-          </DropdownMenuRadioGroup>
-        </DropdownMenuContent>
-      </DropdownMenu>
-    </div>
+          </div>
+        </fieldset>
+        <fieldset className="appearance-fieldset">
+          <legend>Color palette</legend>
+          <div className="palette-grid">
+            {PALETTES.map((item) => (
+              <label
+                className="palette-option"
+                key={item.value}
+                data-selected={palette === item.value}
+              >
+                <input
+                  type="radio"
+                  name="color-palette"
+                  aria-label={`${item.name} — ${item.description}`}
+                  value={item.value}
+                  checked={palette === item.value}
+                  onChange={() => setPalette(item.value)}
+                />
+                <span
+                  className="palette-preview"
+                  data-theme-preview={item.value}
+                  aria-hidden="true"
+                >
+                  <span className="palette-preview-bar" />
+                  <span className="palette-preview-surface">
+                    <span />
+                    <span />
+                    <b />
+                  </span>
+                  <span className="palette-preview-dots">
+                    <i />
+                    <i />
+                    <i />
+                  </span>
+                </span>
+                <span className="palette-option-caption">
+                  <span>
+                    <strong>{item.name}</strong>
+                    <small>{item.description}</small>
+                  </span>
+                  {palette === item.value && (
+                    <Check size={17} aria-hidden="true" />
+                  )}
+                </span>
+              </label>
+            ))}
+          </div>
+        </fieldset>
+        <div className="appearance-footer">
+          <span>Saved on this device</span>
+          <Button onClick={() => setOpen(false)}>Done</Button>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }

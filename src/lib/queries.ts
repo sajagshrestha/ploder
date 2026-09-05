@@ -16,16 +16,15 @@ export type Paginated<T> = {
 
 export type Exercise = {
   id: number;
+  externalId: string | null;
   name: string;
-  muscleGroup:
-    | "chest"
-    | "back"
-    | "shoulders"
-    | "arms"
-    | "legs"
-    | "glutes"
-    | "core";
-  equipment: "barbell" | "dumbbell" | "machine" | "cable" | "bodyweight";
+  alias: string | null;
+  muscleGroup: string;
+  equipment: string;
+  target: string | null;
+  secondaryMuscles: string | null;
+  instructionsEn: string | null;
+  gifUrl: string | null;
   isCompound: boolean;
   imageUrl: string | null;
 };

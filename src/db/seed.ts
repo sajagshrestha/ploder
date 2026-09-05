@@ -1,9 +1,16 @@
 import { eq } from "drizzle-orm";
 
 import { db } from "./index";
-import { exercises, splitDayExercises, splitDays, splits } from "./schema";
-import { seedExercises } from "./seed-data/exercises";
-import { seedImageMap } from "./seed-data/image-map";
+import {
+  exercises,
+  sets,
+  splitDayExercises,
+  splitDays,
+  splits,
+  workoutExercises,
+  workouts,
+} from "./schema";
+import { loadDatasetExercises } from "./seed-data/exercises";
 import { seedSplits } from "./seed-data/splits";
 
 try {
@@ -18,16 +25,24 @@ if (!process.env.DATABASE_URL) {
 }
 
 async function seed() {
-  console.log(`Seeding ${seedExercises.length} exercises...`);
-  await db
-    .insert(exercises)
-    .values(
-      seedExercises.map((exercise) => ({
-        ...exercise,
-        imageUrl: seedImageMap[exercise.name] ?? null,
-      })),
-    )
-    .onConflictDoNothing();
+  // Exercises are referenced by split templates and logged workouts, so a
+  // full catalog rebuild wipes those first (users and body weights stay).
+  console.log("Wiping workouts, splits, and exercises...");
+  await db.delete(sets);
+  await db.delete(workoutExercises);
+  await db.delete(workouts);
+  await db.delete(splitDayExercises);
+  await db.delete(splitDays);
+  await db.delete(splits);
+  await db.delete(exercises);
+
+  console.log("Downloading exercise dataset...");
+  const dataset = await loadDatasetExercises();
+  console.log(`Seeding ${dataset.length} exercises...`);
+  const chunkSize = 200;
+  for (let i = 0; i < dataset.length; i += chunkSize) {
+    await db.insert(exercises).values(dataset.slice(i, i + chunkSize));
+  }
 
   const exerciseRows = await db
     .select({ id: exercises.id, name: exercises.name })
