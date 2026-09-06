@@ -137,7 +137,9 @@ const adminMobileTabs = [
 
 function SignedInAdminLayout() {
   const { user } = useUser();
-  const [menuValue, setMenuValue] = useOverlayState("menu");
+  const [menuValue, setMenuValue] = useOverlayState("menu", {
+    param: "menu",
+  });
   const menuOpen = menuValue !== null;
   const closeMenu = () => setMenuValue(null);
   const me = useMe(true);

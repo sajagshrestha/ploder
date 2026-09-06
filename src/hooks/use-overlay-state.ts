@@ -18,6 +18,17 @@ export function readOverlayValue(
   if (search[OVERLAY_PARAM] !== id) {
     return null;
   }
+  return readOverlayArg(search);
+}
+
+export function readUrlFlag(
+  search: Record<string, unknown>,
+  param: string,
+): string | null {
+  return search[param] == null ? null : "";
+}
+
+function readOverlayArg(search: Record<string, unknown>): string {
   // The router JSON-parses query values, so numeric ids arrive as numbers.
   const arg = search[OVERLAY_ARG_PARAM];
   if (typeof arg === "string") {
@@ -49,17 +60,23 @@ function serializeSearch(search: Record<string, unknown>): URLSearchParams {
 /**
  * Sync a dialog/drawer to the URL so system back navigation closes it.
  *
- * Protocol: opening pushes `?overlay=<id>[&overlayArg=<arg>]`, closing goes
- * back (when this instance pushed the entry) or strips the params with a
- * replace (deep links and restored entries). Opening replaces any other
- * overlay, so Back walks the stack one overlay at a time.
+ * Each overlay owns its value: transient dialogs share `?overlay=<id>` (plus
+ * `?overlayArg=<arg>`), so opening one replaces the other; the menu instead
+ * uses its own `?menu=1` flag (`{ param: "menu" }`) and stays mounted beneath
+ * dialogs. Opening pushes a history entry, closing goes back (when this
+ * instance pushed the entry) or strips the params with a replace (deep links
+ * and restored entries), so Back walks the stack one overlay at a time.
  *
  * Returns `[value, setValue]`: `null` means closed, `""` open without an
  * argument, otherwise open with that argument (e.g. a selected item id).
  */
 export function useOverlayState(
   id: string,
+  options?: { param?: string },
 ): readonly [string | null, (value: string | null) => void] {
+  const param = options?.param ?? OVERLAY_PARAM;
+  const shared = param === OVERLAY_PARAM;
+  const ownerKey = shared ? id : param;
   const router = useRouter();
   const search = useRouterState({
     select: (state) => state.location.search,
@@ -71,10 +88,12 @@ export function useOverlayState(
   const token = tokenRef.current;
   const pushedRef = useRef(false);
 
-  const urlValue = readOverlayValue(search, id);
+  const urlValue = shared
+    ? readOverlayValue(search, id)
+    : readUrlFlag(search, param);
   const ownedElsewhere =
     overlayOwner !== null &&
-    overlayOwner.id === id &&
+    overlayOwner.id === ownerKey &&
     overlayOwner.token !== token;
   const value = urlValue !== null && !ownedElsewhere ? urlValue : null;
 
@@ -97,10 +116,10 @@ export function useOverlayState(
   const setValue = useCallback(
     (next: string | null) => {
       const location = router.state.location;
-      const freshValue = readOverlayValue(
-        location.search as Record<string, unknown>,
-        id,
-      );
+      const raw = location.search as Record<string, unknown>;
+      const freshValue = shared
+        ? readOverlayValue(raw, id)
+        : readUrlFlag(raw, param);
       if (next === null) {
         if (freshValue === null) {
           pushedRef.current = false;
@@ -116,16 +135,18 @@ export function useOverlayState(
       if (freshValue === next) {
         return;
       }
-      overlayOwner = { id, token };
+      overlayOwner = { id: ownerKey, token };
       pushedRef.current = true;
-      const params = serializeSearch(
-        location.search as Record<string, unknown>,
-      );
-      params.set(OVERLAY_PARAM, id);
-      if (next === "") {
-        params.delete(OVERLAY_ARG_PARAM);
+      const params = serializeSearch(raw);
+      if (shared) {
+        params.set(OVERLAY_PARAM, id);
+        if (next === "") {
+          params.delete(OVERLAY_ARG_PARAM);
+        } else {
+          params.set(OVERLAY_ARG_PARAM, next);
+        }
       } else {
-        params.set(OVERLAY_ARG_PARAM, next);
+        params.set(param, "1");
       }
       const query = params.toString();
       // location.hash excludes the leading "#".
@@ -134,7 +155,7 @@ export function useOverlayState(
         `${location.pathname}${query ? `?${query}` : ""}${hash}`,
       );
     },
-    [id, router, token],
+    [id, ownerKey, param, router, shared, token],
   );
 
   return [value, setValue] as const;

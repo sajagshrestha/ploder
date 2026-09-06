@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { readOverlayValue } from "./use-overlay-state";
+import { readOverlayValue, readUrlFlag } from "./use-overlay-state";
 
 test("overlay value reads string args", () => {
   assert.equal(
@@ -24,6 +24,12 @@ test("overlay without an arg reads as empty string", () => {
 test("other overlays read as closed", () => {
   assert.equal(readOverlayValue({ overlay: "menu" }, "appearance"), null);
   assert.equal(readOverlayValue({}, "menu"), null);
+});
+
+test("independent menu flag reads presence as open", () => {
+  assert.equal(readUrlFlag({ menu: "1" }, "menu"), "");
+  assert.equal(readUrlFlag({}, "menu"), null);
+  assert.equal(readUrlFlag({ overlay: "menu" }, "menu"), null);
 });
 
 test("non-string non-numeric args read as empty string", () => {
