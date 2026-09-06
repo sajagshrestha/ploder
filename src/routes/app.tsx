@@ -19,19 +19,19 @@ import {
   X,
   Zap,
 } from "lucide-react";
-import { useState } from "react";
 import { AccountMenu } from "@/components/app/account-menu";
 import { InstallPrompt, PwaRegister } from "@/components/pwa";
 import { ThemeToggle } from "@/components/theme";
 import { Button } from "@/components/ui/button";
 import {
-  Sheet,
-  SheetClose,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from "@/components/ui/drawer";
+import { useOverlayState } from "@/hooks/use-overlay-state";
 import { useMySummary } from "@/lib/my-queries";
 import { useOnline, useOutboxCount } from "@/lib/online";
 
@@ -106,7 +106,7 @@ function AppLayout() {
         <img
           className="welcome-asset"
           src="/assets/training-dumbbell.png"
-          alt="Graphite dumbbell with lime accents"
+          alt="Dumbbell illustration"
         />
         <PwaRegister />
       </div>
@@ -122,8 +122,9 @@ const mobileTabs = [
 
 function SignedInLayout() {
   const { user } = useUser();
-  const [menuOpen, setMenuOpen] = useState(false);
-  const closeMenu = () => setMenuOpen(false);
+  const [menuValue, setMenuValue] = useOverlayState("menu");
+  const menuOpen = menuValue !== null;
+  const closeMenu = () => setMenuValue(null);
   const summary = useMySummary();
   const matches = useMatches();
   const path = matches.at(-1)?.pathname ?? "/app";
@@ -225,7 +226,11 @@ function SignedInLayout() {
           <span>PLODER</span>
         </footer>
       </div>
-      <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
+      <Drawer
+        direction="right"
+        open={menuOpen}
+        onOpenChange={(open) => setMenuValue(open ? "" : null)}
+      >
         <nav className="mobile-navigation" aria-label="Mobile navigation">
           {mobileTabs.map((tab) => (
             <Link
@@ -237,26 +242,22 @@ function SignedInLayout() {
               <tab.icon size={23} />
             </Link>
           ))}
-          <SheetTrigger asChild>
+          <DrawerTrigger asChild>
             <button type="button" aria-label="Open menu">
               <Menu size={23} />
             </button>
-          </SheetTrigger>
+          </DrawerTrigger>
         </nav>
-        <SheetContent
-          side="right"
-          className="mobile-drawer"
-          showCloseButton={false}
-        >
-          <SheetHeader className="drawer-brand">
+        <DrawerContent side="right" className="mobile-drawer">
+          <DrawerHeader className="drawer-brand">
             <Link to="/app" className="app-brand" onClick={closeMenu}>
               <span className="brand-mark">
                 <Dumbbell size={22} />
               </span>
               ploder<span className="brand-dot">.</span>
             </Link>
-            <SheetTitle className="sr-only">Menu</SheetTitle>
-          </SheetHeader>
+            <DrawerTitle className="sr-only">Menu</DrawerTitle>
+          </DrawerHeader>
           <div className="drawer-actions">
             <Button asChild onClick={closeMenu}>
               <Link to="/app/train">
@@ -294,7 +295,7 @@ function SignedInLayout() {
             <InstallPrompt />
             <div className="sidebar-profile">
               <AccountMenu withName />
-              <SheetClose asChild>
+              <DrawerClose asChild>
                 <button
                   type="button"
                   aria-label="Close menu"
@@ -302,11 +303,11 @@ function SignedInLayout() {
                 >
                   <X size={23} />
                 </button>
-              </SheetClose>
+              </DrawerClose>
             </div>
           </div>
-        </SheetContent>
-      </Sheet>
+        </DrawerContent>
+      </Drawer>
       <PwaRegister />
     </div>
   );

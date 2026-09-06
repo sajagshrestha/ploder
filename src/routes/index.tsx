@@ -87,7 +87,7 @@ function Landing() {
         <img
           className="welcome-asset"
           src="/assets/training-dumbbell.png"
-          alt="Graphite dumbbell with lime accents"
+          alt="Dumbbell illustration"
         />
       </div>
 

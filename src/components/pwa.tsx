@@ -9,6 +9,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/responsive-dialog";
+import { useOverlayState } from "@/hooks/use-overlay-state";
 
 type BeforeInstallPromptEvent = Event & {
   prompt: () => Promise<void>;
@@ -38,7 +39,9 @@ export function InstallPrompt({ className }: { className?: string }) {
   );
   const [installed, setInstalled] = useState(false);
   const [isIos, setIsIos] = useState(false);
-  const [showIosHelp, setShowIosHelp] = useState(false);
+  const [iosHelpValue, setIosHelpValue] = useOverlayState("install-help");
+  const showIosHelp = iosHelpValue !== null;
+  const setShowIosHelp = (next: boolean) => setIosHelpValue(next ? "" : null);
 
   useEffect(() => {
     const onPrompt = (event: BeforeInstallPromptEvent) => {

@@ -1,9 +1,30 @@
-"""Render Ploder's original dumbbell illustration. Run with Blender --background --python."""
+"""Render Ploder's original dumbbell illustration. Run with Blender --background --python.
+
+The web UI tints this render per theme palette via CSS hue-rotate (see
+.hero-dumbbell in src/styles.css), so a single PNG covers all palettes.
+For a pixel-perfect variant, set PLODER_PALETTE to one of
+neutral|lime|rose|ocean|iris to bake the trim color in and override the
+output filename, e.g.:
+
+    PLODER_PALETTE=rose blender --background --python scripts/render-training-asset.py
+"""
 import bpy
 import math
+import os
 from pathlib import Path
 from mathutils import Vector
 
+# Trim colors: 'lime' keeps the original volt render (runtime CSS maps it to
+# the lime --chart-1); other entries bake that palette's --chart-1 in.
+PALETTE_TRIMS = {
+    'neutral': (0.09, 0.09, 0.11),
+    'lime': (0.64, 0.89, 0.13),
+    'rose': (0.81, 0.41, 0.58),
+    'ocean': (0.22, 0.47, 0.73),
+    'iris': (0.53, 0.38, 0.71),
+}
+PALETTE = os.environ.get('PLODER_PALETTE', 'lime')
+TRIM_COLOR = PALETTE_TRIMS.get(PALETTE, PALETTE_TRIMS['lime'])
 ROOT = Path(__file__).resolve().parents[1]
 scene = bpy.data.scenes.new('Ploder Studio')
 bpy.context.window.scene = scene
@@ -29,7 +50,7 @@ def material(name, color, metal=0, rough=0.4):
     return m
 
 rubber = material('Graphite rubber', (0.035, 0.045, 0.031), 0.18, 0.32)
-lime = material('Volt green trim', (0.64, 0.89, 0.13), 0.32, 0.24)
+lime = material('Volt green trim', TRIM_COLOR, 0.32, 0.24)
 steel = material('Brushed titanium', (0.4, 0.45, 0.36), 0.85, 0.3)
 
 def cylinder(name, radius, depth, x, mat, vertices=64):
@@ -67,6 +88,7 @@ for name, loc, power, size in [('Key', (0,-4,6), 700, 5), ('Rim', (3,3,4), 1100,
     light.data.size=size
     light.rotation_euler=(-light.location).to_track_quat('-Z','Y').to_euler()
 scene.render.image_settings.file_format='PNG'
-scene.render.filepath=str(ROOT/'public/assets/training-dumbbell.png')
+asset_name = 'training-dumbbell.png' if PALETTE == 'lime' else f'training-dumbbell-{PALETTE}.png'
+scene.render.filepath=str(ROOT/'public/assets'/asset_name)
 bpy.data.libraries.write(str(ROOT/'public/assets/training-dumbbell.blend'), {scene})
 bpy.ops.render.render(write_still=True)

@@ -49,6 +49,7 @@ import {
 } from "@/components/ui/responsive-dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { SearchBar } from "@/components/ui/search-bar";
+import { useOverlayState } from "@/hooks/use-overlay-state";
 import {
   type MyWorkoutExercise,
   useAddWorkoutExercises,
@@ -221,7 +222,9 @@ function ActiveWorkout({
   const workout = useMyWorkout(workoutId < 0 ? null : workoutId);
   const me = useMe();
   const complete = useCompleteWorkout();
-  const [adding, setAdding] = useState(false);
+  const [addingValue, setAddingValue] = useOverlayState("add-exercises");
+  const adding = addingValue !== null;
+  const setAdding = (next: boolean) => setAddingValue(next ? "" : null);
   const view = manage ? "list" : "cards";
   const location = useLocation();
   const navigate = useNavigate();
@@ -677,10 +680,17 @@ function ExerciseDeck({
   const exercise = exercises[index] ?? null;
   const logSet = useLogSet();
   const deleteSet = useDeleteSet();
-  const [deletingSet, setDeletingSet] = useState<{
-    id: number;
-    setNumber: number;
-  } | null>(null);
+  const [deleteSetId, setDeleteSetId] = useOverlayState("delete-set");
+  const deletingSet = (() => {
+    if (deleteSetId === null) return null;
+    for (const item of exercises) {
+      const found = item.sets.find((set) => String(set.id) === deleteSetId);
+      if (found) return { id: found.id, setNumber: found.setNumber };
+    }
+    return null;
+  })();
+  const setDeletingSet = (next: { id: number; setNumber: number } | null) =>
+    setDeleteSetId(next === null ? null : String(next.id));
 
   useEffect(() => {
     if (active > count - 1) {

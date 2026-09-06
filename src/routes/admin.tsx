@@ -19,17 +19,17 @@ import {
   Users,
   Zap,
 } from "lucide-react";
-import { useState } from "react";
-
 import { InstallPrompt, PwaRegister } from "@/components/pwa";
 import { ThemeToggle } from "@/components/theme";
 import { Button } from "@/components/ui/button";
 import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from "@/components/ui/drawer";
+import { useOverlayState } from "@/hooks/use-overlay-state";
 import { apiFetch } from "@/lib/api";
 
 export const Route = createFileRoute("/admin")({
@@ -109,7 +109,7 @@ function AdminLayout() {
         <img
           className="welcome-asset"
           src="/assets/training-dumbbell.png"
-          alt="Graphite dumbbell with lime accents"
+          alt="Dumbbell illustration"
         />
         <PwaRegister />
       </div>
@@ -137,8 +137,9 @@ const adminMobileTabs = [
 
 function SignedInAdminLayout() {
   const { user } = useUser();
-  const [menuOpen, setMenuOpen] = useState(false);
-  const closeMenu = () => setMenuOpen(false);
+  const [menuValue, setMenuValue] = useOverlayState("menu");
+  const menuOpen = menuValue !== null;
+  const closeMenu = () => setMenuValue(null);
   const me = useMe(true);
   const matches = useMatches();
   const currentPath = matches.at(-1)?.pathname ?? "/admin";
@@ -268,37 +269,38 @@ function SignedInAdminLayout() {
           <span>PLODER / COACH WITH INTENTION</span>
         </footer>
       </div>
-      <nav className="mobile-navigation" aria-label="Mobile admin navigation">
-        {adminMobileTabs.map((tab) => (
-          <Link
-            key={tab.to}
-            to={tab.to}
-            activeOptions={{ exact: tab.exact }}
-            aria-label={tab.label}
-          >
-            <tab.icon size={23} />
-          </Link>
-        ))}
-        <button
-          type="button"
-          aria-label="Open menu"
-          aria-expanded={menuOpen}
-          onClick={() => setMenuOpen(true)}
-        >
-          <Menu size={23} />
-        </button>
-      </nav>
-      <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
-        <SheetContent side="right" className="mobile-drawer">
-          <SheetHeader className="drawer-brand">
+      <Drawer
+        direction="right"
+        open={menuOpen}
+        onOpenChange={(open) => setMenuValue(open ? "" : null)}
+      >
+        <nav className="mobile-navigation" aria-label="Mobile admin navigation">
+          {adminMobileTabs.map((tab) => (
+            <Link
+              key={tab.to}
+              to={tab.to}
+              activeOptions={{ exact: tab.exact }}
+              aria-label={tab.label}
+            >
+              <tab.icon size={23} />
+            </Link>
+          ))}
+          <DrawerTrigger asChild>
+            <button type="button" aria-label="Open menu">
+              <Menu size={23} />
+            </button>
+          </DrawerTrigger>
+        </nav>
+        <DrawerContent side="right" className="mobile-drawer">
+          <DrawerHeader className="drawer-brand">
             <Link to="/admin" className="app-brand" onClick={closeMenu}>
               <span className="brand-mark">
                 <Dumbbell size={22} />
               </span>
               ploder<span className="brand-dot">.</span>
             </Link>
-            <SheetTitle className="sr-only">Menu</SheetTitle>
-          </SheetHeader>
+            <DrawerTitle className="sr-only">Menu</DrawerTitle>
+          </DrawerHeader>
           <div className="drawer-actions">
             <Button asChild onClick={closeMenu}>
               <Link to="/app">
@@ -333,8 +335,8 @@ function SignedInAdminLayout() {
               </div>
             </div>
           </div>
-        </SheetContent>
-      </Sheet>
+        </DrawerContent>
+      </Drawer>
       <PwaRegister />
     </div>
   );

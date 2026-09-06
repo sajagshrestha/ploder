@@ -9,6 +9,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/responsive-dialog";
+import { useOverlayState } from "@/hooks/use-overlay-state";
 import {
   DEFAULT_PALETTE,
   PALETTE_KEY,
@@ -121,7 +122,9 @@ for (let i = 0; i < PALETTES.length; i += PALETTES_PER_PAGE) {
 
 export function ThemeToggle({ className }: { className?: string }) {
   const { mode, setMode, palette, setPalette } = useTheme();
-  const [open, setOpen] = useState(false);
+  const [appearance, setAppearance] = useOverlayState("appearance");
+  const open = appearance !== null;
+  const setOpen = (next: boolean) => setAppearance(next ? "" : null);
   const [page, setPage] = useState(0);
   const gridRef = useRef<HTMLDivElement>(null);
   useEffect(() => {

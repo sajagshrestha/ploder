@@ -22,6 +22,7 @@ import {
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useOverlayState } from "@/hooks/use-overlay-state";
 import { apiFetch } from "@/lib/api";
 import type { Exercise } from "@/lib/queries";
 
@@ -37,7 +38,12 @@ export function ExerciseThumbnail({
   className?: string;
 }) {
   const [failed, setFailed] = useState<string | null>(null);
-  const [open, setOpen] = useState(false);
+  const [previewValue, setPreviewValue] = useOverlayState("preview");
+  const open = exerciseId != null && previewValue === String(exerciseId);
+  const setOpen = (next: boolean) => {
+    if (exerciseId == null) return;
+    setPreviewValue(next ? String(exerciseId) : null);
+  };
   const mobile = useIsMobile();
   const media = (
     <span className={className} aria-hidden="true">

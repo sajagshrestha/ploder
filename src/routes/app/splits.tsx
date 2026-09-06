@@ -15,8 +15,8 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "@/components/ui/responsive-alert-dialog";
+import { useOverlayState } from "@/hooks/use-overlay-state";
 import {
   useCloneTemplate,
   useDeleteMySplit,
@@ -36,6 +36,12 @@ function SplitsPage() {
   const update = useUpdateMySplit();
   const remove = useDeleteMySplit();
   const [tab, setTab] = useState<"mine" | "templates">("mine");
+  const [deleteSplitId, setDeleteSplitId] = useOverlayState("delete-split");
+  const deleteSplit =
+    deleteSplitId === null
+      ? null
+      : (mine.data?.data.find((split) => String(split.id) === deleteSplitId) ??
+        null);
 
   return (
     <div className="space-y-4">
@@ -116,43 +122,15 @@ function SplitsPage() {
                         Set active
                       </Button>
                     )}
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button
-                          aria-label={`Delete ${split.name}`}
-                          disabled={remove.isPending}
-                          size="sm"
-                          variant="ghost"
-                        >
-                          <Trash2 className="size-3" />
-                        </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>
-                            Delete "{split.name}"?
-                          </AlertDialogTitle>
-                          <AlertDialogDescription>
-                            Removes split + days. Past workouts kept.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Cancel</AlertDialogCancel>
-                          <AlertDialogAction
-                            variant="destructive"
-                            onClick={() =>
-                              toast.promise(remove.mutateAsync(split.id), {
-                                loading: "Deleting…",
-                                success: "Deleted",
-                                error: (error) => error.message,
-                              })
-                            }
-                          >
-                            Delete
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
+                    <Button
+                      aria-label={`Delete ${split.name}`}
+                      disabled={remove.isPending}
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => setDeleteSplitId(String(split.id))}
+                    >
+                      <Trash2 className="size-3" />
+                    </Button>
                   </div>
                 </div>
                 <Button asChild size="icon" variant="ghost">
@@ -181,6 +159,40 @@ function SplitsPage() {
           )}
         </div>
       )}
+
+      <AlertDialog
+        open={deleteSplit !== null}
+        onOpenChange={(open) => {
+          if (!open) setDeleteSplitId(null);
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              Delete "{deleteSplit?.name ?? "plan"}"?
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Removes split + days. Past workouts kept.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              variant="destructive"
+              onClick={() => {
+                if (!deleteSplit) return;
+                toast.promise(remove.mutateAsync(deleteSplit.id), {
+                  loading: "Deleting…",
+                  success: "Deleted",
+                  error: (error) => error.message,
+                });
+              }}
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {tab === "templates" && (
         <div className="grid items-start gap-4 xl:grid-cols-2">

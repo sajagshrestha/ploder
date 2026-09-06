@@ -1,7 +1,6 @@
 "use client";
 
 import { Drawer as DrawerPrimitive } from "vaul";
-import { XIcon } from "lucide-react";
 import type * as React from "react";
 import { cn } from "@/lib/utils";
 
@@ -22,11 +21,11 @@ function DrawerClose(props: React.ComponentProps<typeof DrawerPrimitive.Close>) 
 }
 
 function DrawerOverlay({ className, ...props }: React.ComponentProps<typeof DrawerPrimitive.Overlay>) {
-  return <DrawerPrimitive.Overlay data-slot="drawer-overlay" className={cn("fixed inset-0 z-50 bg-black/55 backdrop-blur-[2px]", className)} {...props} />;
+  return <DrawerPrimitive.Overlay data-slot="drawer-overlay" className={cn("fixed inset-0 z-50 bg-black/55", className)} {...props} />;
 }
 
-function DrawerContent({ className, children, showCloseButton = true, ...props }: React.ComponentProps<typeof DrawerPrimitive.Content> & { showCloseButton?: boolean }) {
-  return <DrawerPortal><DrawerOverlay /><DrawerPrimitive.Content data-slot="drawer-content" className={cn("fixed inset-x-0 bottom-0 z-50 mt-24 flex min-h-[40dvh] max-h-[92dvh] flex-col rounded-t-[22px] border bg-card text-card-foreground outline-none", className)} {...props}><div data-slot="drawer-handle" aria-hidden="true" className="mx-auto mt-4 h-2 w-[100px] shrink-0 rounded-full bg-muted-foreground/35" />{children}{showCloseButton && <DrawerPrimitive.Close className="absolute top-5 right-4 grid size-9 place-items-center rounded-lg border bg-background" aria-label="Close"><XIcon className="size-4" /></DrawerPrimitive.Close>}</DrawerPrimitive.Content></DrawerPortal>;
+function DrawerContent({ className, children, side = "bottom", ...props }: React.ComponentProps<typeof DrawerPrimitive.Content> & { side?: "bottom" | "right" }) {
+  return <DrawerPortal><DrawerOverlay /><DrawerPrimitive.Content data-slot="drawer-content" className={cn("fixed z-50 flex flex-col bg-card text-card-foreground outline-none", side === "bottom" && "inset-x-0 bottom-0 mt-24 min-h-[40dvh] max-h-[92dvh] rounded-t-[22px] border", side === "right" && "inset-y-0 right-0 h-full w-[86vw] max-w-[320px] border-l", className)} {...props}>{side === "bottom" && <div data-slot="drawer-handle" aria-hidden="true" className="mx-auto mt-4 h-2 w-[100px] shrink-0 rounded-full bg-muted-foreground/35" />}{children}</DrawerPrimitive.Content></DrawerPortal>;
 }
 
 function DrawerHeader({ className, ...props }: React.ComponentProps<"div">) {

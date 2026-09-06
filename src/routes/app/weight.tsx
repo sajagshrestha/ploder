@@ -16,6 +16,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/responsive-dialog";
+import { useOverlayState } from "@/hooks/use-overlay-state";
 import { dateKey } from "@/lib/activity";
 import {
   useDeleteBodyWeight,
@@ -35,15 +36,17 @@ function WeightPage() {
   const latestHistory = useMyBodyWeights();
   const logWeight = useLogBodyWeight();
   const remove = useDeleteBodyWeight();
-  const [deleting, setDeleting] = useState<{
-    id: number;
-    weight: string;
-    recordedAt: string;
-  } | null>(null);
+  const [deletingId, setDeletingId] = useOverlayState("delete-weighin");
   const [weight, setWeight] = useState("");
   const [date, setDate] = useState(() => dateKey(new Date()));
   const unit = me.data?.data.preferredUnit ?? "kg";
   const entries = history.data?.data ?? [];
+  const deleting =
+    deletingId === null
+      ? null
+      : (entries.find((entry) => String(entry.id) === deletingId) ?? null);
+  const setDeleting = (next: { id: number } | null) =>
+    setDeletingId(next === null ? null : String(next.id));
   const latest = latestHistory.data?.data[0];
   const defaultedRef = useRef(false);
   useEffect(() => {

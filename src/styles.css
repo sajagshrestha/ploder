@@ -382,6 +382,20 @@
 .topbar-weighin { margin-left: 4px; font-size: 11px; height: 37px; border-radius: 9px; padding-inline: 14px; }
 .hero-footnote { display: block; color: #677359; font-size: 8px; margin-top: 12px; }
 .hero-dumbbell { position: absolute; width: 64%; max-width: none; height: auto; right: -10%; top: 3%; transform: rotate(-12deg); pointer-events: none; animation: dumbbell-float 7s ease-in-out infinite; filter: drop-shadow(0 30px 18px #3c512440) saturate(1.06); }
+/* Themed dumbbell: the PNG's volt trim is saturated while the graphite/steel
+   body is near-gray (hue-invariant), so hue-rotate recolors only the accent.
+   Rotations measured from the rendered trim hue (~72deg) to each palette's
+   light-mode --chart-1 hue (lime 86, rose 334, ocean 210, iris 266). */
+:root[data-palette="lime"] .hero-dumbbell { filter: hue-rotate(14deg) saturate(1.05) drop-shadow(0 30px 18px #3c512440); }
+:root[data-palette="rose"] .hero-dumbbell { filter: hue-rotate(-98deg) saturate(1.15) drop-shadow(0 30px 18px #3c512440); }
+:root[data-palette="ocean"] .hero-dumbbell { filter: hue-rotate(138deg) saturate(1.15) drop-shadow(0 30px 18px #3c512440); }
+:root[data-palette="iris"] .hero-dumbbell { filter: hue-rotate(194deg) saturate(1.1) drop-shadow(0 30px 18px #3c512440); }
+:root[data-palette="neutral"] .hero-dumbbell { filter: saturate(0.12) brightness(1.04) drop-shadow(0 30px 18px #3c512440); }
+:root[data-palette="lime"] .welcome-asset { filter: hue-rotate(14deg) saturate(1.05); }
+:root[data-palette="rose"] .welcome-asset { filter: hue-rotate(-98deg) saturate(1.15); }
+:root[data-palette="ocean"] .welcome-asset { filter: hue-rotate(138deg) saturate(1.15); }
+:root[data-palette="iris"] .welcome-asset { filter: hue-rotate(194deg) saturate(1.1); }
+:root[data-palette="neutral"] .welcome-asset { filter: saturate(0.12) brightness(1.04); }
 .dashboard-panel { background: var(--card); border: 1px solid var(--border); border-radius: 17px; padding: 24px; min-width: 0; }
 .panel-heading { display: flex; justify-content: space-between; align-items: center; gap: 14px; margin-bottom: 18px; }
 .panel-heading h2 { font-size: 15px; letter-spacing: -.35px; font-weight: 700; }
@@ -701,7 +715,12 @@ fieldset.weighin-chips, .weighin-fieldset { border: 0; margin-inline: 0; padding
 .workout-hero-focused .hero-button { background: var(--primary) !important; color: var(--primary-foreground) !important; min-height: 48px; font-size: 13px; border-radius: 10px; box-shadow: none; }
 .workout-hero-focused .hero-button:hover { filter: brightness(.96); transform: none; }
 .workout-hero-focused .hero-button svg:last-child { margin-left: auto; }
-.workout-hero-focused .hero-dumbbell { width: 36%; right: -3%; top: 18%; animation: none; transform: rotate(-12deg); filter: none; opacity: .85; }
+.workout-hero-focused .hero-dumbbell { width: 36%; right: -3%; top: 18%; animation: none; transform: rotate(-12deg); filter: hue-rotate(14deg) saturate(1.05); opacity: .85; }
+:root[data-palette="lime"] .workout-hero-focused .hero-dumbbell { filter: hue-rotate(14deg) saturate(1.05); }
+:root[data-palette="rose"] .workout-hero-focused .hero-dumbbell { filter: hue-rotate(-98deg) saturate(1.15); }
+:root[data-palette="ocean"] .workout-hero-focused .hero-dumbbell { filter: hue-rotate(138deg) saturate(1.15); }
+:root[data-palette="iris"] .workout-hero-focused .hero-dumbbell { filter: hue-rotate(194deg) saturate(1.1); }
+:root[data-palette="neutral"] .workout-hero-focused .hero-dumbbell { filter: saturate(0.12) brightness(1.04); }
 @media (max-width: 700px) {
   .workout-hero.workout-hero-focused { min-height: 0; }
   .workout-hero-focused .hero-copy { padding: 20px; }
@@ -809,7 +828,6 @@ fieldset.weighin-chips, .weighin-fieldset { border: 0; margin-inline: 0; padding
 .palette-pages button { height: 5px; flex: 0 0 24px; border-radius: 999px; background: var(--border); border: 0; padding: 0; cursor: pointer; transition: background .2s, height .2s; }
 .palette-pages button[data-active="true"] { background: var(--primary); height: 9px; }
 [data-slot="drawer-content"].appearance-dialog [data-slot="drawer-header"] { padding-inline: 0; }
-[data-slot="drawer-content"].appearance-dialog > button[aria-label="Close"] { display: none; }
 .appearance-fieldset { min-width: 0; }
 .appearance-fieldset legend { margin-bottom: 10px; font-size: 12px; font-weight: 700; color: var(--muted-foreground); }
 .appearance-modes { display: grid; grid-template-columns: repeat(3, 1fr); padding: 4px; gap: 4px; border-radius: 12px; background: var(--muted); }

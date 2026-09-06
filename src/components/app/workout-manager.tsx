@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { ExerciseThumbnail } from "@/components/app/exercise-thumbnail";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { useOverlayState } from "@/hooks/use-overlay-state";
 import {
   type MyWorkoutExercise,
   useRemoveWorkoutExercise,
@@ -61,7 +62,13 @@ function ManagerList({
   const remove = useRemoveWorkoutExercise();
   const [rows, setRows] = useState(exercises);
   const draft = useRef(exercises);
-  const [removing, setRemoving] = useState<MyWorkoutExercise | null>(null);
+  const [removingId, setRemovingId] = useOverlayState("remove-exercise");
+  const removing =
+    removingId === null
+      ? null
+      : (rows.find((row) => String(row.id) === removingId) ?? null);
+  const setRemoving = (next: MyWorkoutExercise | null) =>
+    setRemovingId(next === null ? null : String(next.id));
   const busy = reorder.isPending || remove.isPending;
   const waitingForSync = exercises.some((exercise) => exercise.id < 0);
   const [, listDrop] = useDrop(

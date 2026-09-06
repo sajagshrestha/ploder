@@ -41,6 +41,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useOverlayState } from "@/hooks/use-overlay-state";
 import {
   type MyWorkoutSummary,
   useBulkDeleteWorkouts,
@@ -90,8 +91,12 @@ function HistoryPage() {
   const [selected, setSelected] = useState<Map<number, MyWorkoutSummary>>(
     () => new Map(),
   );
-  const [confirmOpen, setConfirmOpen] = useState(false);
-  const [filtersOpen, setFiltersOpen] = useState(false);
+  const [confirmValue, setConfirmValue] = useOverlayState("delete-sessions");
+  const confirmOpen = confirmValue !== null;
+  const setConfirmOpen = (next: boolean) => setConfirmValue(next ? "" : null);
+  const [filtersValue, setFiltersValue] = useOverlayState("filters");
+  const filtersOpen = filtersValue !== null;
+  const setFiltersOpen = (next: boolean) => setFiltersValue(next ? "" : null);
   const mobile = useIsMobile();
   const workouts = history.data?.data ?? [];
   const total = history.data?.total ?? 0;
