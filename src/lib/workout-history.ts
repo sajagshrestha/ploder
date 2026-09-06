@@ -13,7 +13,10 @@ export const historySearchSchema = z.object({
   status: z.enum(["completed", "in_progress"]).optional().catch(undefined),
   sort: z.enum(["newest", "oldest"]).optional().catch(undefined),
   overlay: z.string().max(64).optional().catch(undefined),
-  overlayArg: z.string().max(200).optional().catch(undefined),
+  overlayArg: z
+    .union([z.string().max(200), z.number()])
+    .optional()
+    .catch(undefined),
 });
 
 export type HistorySearch = z.infer<typeof historySearchSchema>;

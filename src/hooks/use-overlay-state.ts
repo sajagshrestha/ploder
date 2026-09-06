@@ -11,12 +11,22 @@ type OverlayOwner = { id: string; token: object } | null;
 // the opener renders its content, the rest stay shut.
 let overlayOwner: OverlayOwner = null;
 
-function readValue(search: Record<string, unknown>, id: string): string | null {
+export function readOverlayValue(
+  search: Record<string, unknown>,
+  id: string,
+): string | null {
   if (search[OVERLAY_PARAM] !== id) {
     return null;
   }
+  // The router JSON-parses query values, so numeric ids arrive as numbers.
   const arg = search[OVERLAY_ARG_PARAM];
-  return typeof arg === "string" ? arg : "";
+  if (typeof arg === "string") {
+    return arg;
+  }
+  if (typeof arg === "number" || typeof arg === "boolean") {
+    return String(arg);
+  }
+  return "";
 }
 
 function serializeSearch(search: Record<string, unknown>): URLSearchParams {
@@ -61,7 +71,7 @@ export function useOverlayState(
   const token = tokenRef.current;
   const pushedRef = useRef(false);
 
-  const urlValue = readValue(search, id);
+  const urlValue = readOverlayValue(search, id);
   const ownedElsewhere =
     overlayOwner !== null &&
     overlayOwner.id === id &&
@@ -87,7 +97,7 @@ export function useOverlayState(
   const setValue = useCallback(
     (next: string | null) => {
       const location = router.state.location;
-      const freshValue = readValue(
+      const freshValue = readOverlayValue(
         location.search as Record<string, unknown>,
         id,
       );
@@ -118,8 +128,10 @@ export function useOverlayState(
         params.set(OVERLAY_ARG_PARAM, next);
       }
       const query = params.toString();
+      // location.hash excludes the leading "#".
+      const hash = location.hash ? `#${location.hash}` : "";
       router.history.push(
-        `${location.pathname}${query ? `?${query}` : ""}${location.hash ?? ""}`,
+        `${location.pathname}${query ? `?${query}` : ""}${hash}`,
       );
     },
     [id, router, token],
