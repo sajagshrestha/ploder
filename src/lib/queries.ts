@@ -62,6 +62,9 @@ export type SplitDetail = Split & {
       splitDayExerciseId: number;
       exerciseId: number;
       exerciseName: string | null;
+      target?: string | null;
+      imageUrl?: string | null;
+      gifUrl?: string | null;
       orderIndex: number;
       targetSets: number;
       targetRepMin: number;

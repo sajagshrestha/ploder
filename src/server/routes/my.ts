@@ -8,6 +8,7 @@ import {
   ilike,
   inArray,
   isNull,
+  lt,
   ne,
   or,
   sql,
@@ -34,12 +35,13 @@ import {
   mySetCreateSchema,
   mySplitCloneSchema,
   mySplitUpdateSchema,
+  myWorkoutBulkDeleteSchema,
   myWorkoutExerciseAddSchema,
   myWorkoutExerciseOrderSchema,
   myWorkoutExercisesAddSchema,
+  myWorkoutHistoryQuery,
   myWorkoutStartSchema,
   paginationQuery,
-  workoutListQuery,
 } from "#/server/validators";
 
 type User = AppEnv["Variables"]["user"];
@@ -80,6 +82,7 @@ async function splitDetail(splitId: number) {
       splitDayExerciseId: splitDayExercises.id,
       exerciseId: splitDayExercises.exerciseId,
       exerciseName: exercises.name,
+      target: exercises.target,
       exerciseOrderIndex: splitDayExercises.orderIndex,
       targetSets: splitDayExercises.targetSets,
       targetRepMin: splitDayExercises.targetRepMin,
@@ -111,6 +114,7 @@ async function splitDetail(splitId: number) {
         splitDayExerciseId: day.splitDayExerciseId,
         exerciseId: day.exerciseId,
         exerciseName: day.exerciseName,
+        target: day.target,
         orderIndex: day.exerciseOrderIndex,
         targetSets: day.targetSets,
         targetRepMin: day.targetRepMin,
@@ -139,6 +143,7 @@ async function workoutDetail(workoutId: number) {
       exerciseName: exercises.name,
       imageUrl: exercises.imageUrl,
       gifUrl: exercises.gifUrl,
+      target: exercises.target,
       orderIndex: workoutExercises.orderIndex,
       notes: workoutExercises.notes,
     })
@@ -379,6 +384,16 @@ export const myRoutes = new Hono<AppEnv>()
     });
   })
   // Exercise library (read-only for signed-in users)
+  .get("/exercises/:id", async (context) => {
+    const { id } = idParam.parse(context.req.param());
+    const [exercise] = await db
+      .select()
+      .from(exercises)
+      .where(eq(exercises.id, id))
+      .limit(1);
+    if (!exercise) return context.json({ error: "Exercise not found" }, 404);
+    return context.json({ data: exercise });
+  })
   .get("/exercises", async (context) => {
     const query = exerciseListQuery.parse(context.req.query());
     const filters = [
@@ -553,10 +568,15 @@ export const myRoutes = new Hono<AppEnv>()
   // Own workouts
   .get("/workouts", async (context) => {
     const user: User = context.get("user");
-    const query = workoutListQuery.parse(context.req.query());
+    const query = myWorkoutHistoryQuery.parse(context.req.query());
     const filters = [
       eq(workouts.userId, user.id),
-      query.status && eq(workouts.status, query.status),
+      query.status ? eq(workouts.status, query.status) : undefined,
+      query.search
+        ? ilike(workouts.name, `%${query.search.replace(/[\\%_]/g, "\\$&")}%`)
+        : undefined,
+      query.from ? gte(workouts.startedAt, new Date(query.from)) : undefined,
+      query.to ? lt(workouts.startedAt, new Date(query.to)) : undefined,
     ].filter(Boolean);
     const where = and(...filters);
 
@@ -565,13 +585,54 @@ export const myRoutes = new Hono<AppEnv>()
         .select()
         .from(workouts)
         .where(where)
-        .orderBy(desc(workouts.startedAt))
+        .orderBy(
+          query.sort === "oldest"
+            ? asc(workouts.startedAt)
+            : desc(workouts.startedAt),
+          query.sort === "oldest" ? asc(workouts.id) : desc(workouts.id),
+        )
         .limit(query.pageSize)
         .offset((query.page - 1) * query.pageSize),
       db.select({ value: count() }).from(workouts).where(where),
     ]);
+    const totals = rows.length
+      ? await db
+          .select({
+            workoutId: workoutExercises.workoutId,
+            exerciseCount:
+              sql<number>`count(distinct ${workoutExercises.id})`.mapWith(
+                Number,
+              ),
+            setCount: count(sets.id),
+            volume:
+              sql<number>`coalesce(sum(${sets.weight} * ${sets.reps}), 0)`.mapWith(
+                Number,
+              ),
+          })
+          .from(workoutExercises)
+          .leftJoin(
+            sets,
+            and(
+              eq(sets.workoutExerciseId, workoutExercises.id),
+              eq(sets.completed, true),
+            ),
+          )
+          .where(
+            inArray(
+              workoutExercises.workoutId,
+              rows.map((row) => row.id),
+            ),
+          )
+          .groupBy(workoutExercises.workoutId)
+      : [];
+    const totalsById = new Map(totals.map((row) => [row.workoutId, row]));
     return context.json({
-      data: rows,
+      data: rows.map((row) => ({
+        ...row,
+        exerciseCount: totalsById.get(row.id)?.exerciseCount ?? 0,
+        setCount: totalsById.get(row.id)?.setCount ?? 0,
+        volume: totalsById.get(row.id)?.volume ?? 0,
+      })),
       total,
       page: query.page,
       pageSize: query.pageSize,
@@ -633,6 +694,19 @@ export const myRoutes = new Hono<AppEnv>()
 
     const detail = await workoutDetail(workout.id);
     return context.json({ data: detail }, 201);
+  })
+  .post("/workouts/bulk-delete", async (context) => {
+    const { ids } = myWorkoutBulkDeleteSchema.parse(await context.req.json());
+    const deleted = await db
+      .delete(workouts)
+      .where(
+        and(
+          eq(workouts.userId, context.get("user").id),
+          inArray(workouts.id, ids),
+        ),
+      )
+      .returning({ id: workouts.id });
+    return context.json({ data: deleted });
   })
   .get("/workouts/:id", async (context) => {
     const user: User = context.get("user");

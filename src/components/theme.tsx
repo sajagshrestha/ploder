@@ -1,5 +1,5 @@
 import { Check, Monitor, Moon, Palette, Sun } from "lucide-react";
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -8,8 +8,9 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
+} from "@/components/ui/responsive-dialog";
 import {
+  DEFAULT_PALETTE,
   PALETTE_KEY,
   PALETTES,
   resolveMode,
@@ -18,6 +19,7 @@ import {
   type ThemeMode,
   type ThemePalette,
 } from "@/lib/theme-preferences";
+import { cn } from "@/lib/utils";
 
 type ThemeContextValue = {
   mode: ThemeMode;
@@ -36,7 +38,7 @@ function readPreferences() {
       ),
     };
   } catch {
-    return { mode: "system" as const, palette: "lime" as const };
+    return { mode: "system" as const, palette: DEFAULT_PALETTE };
   }
 }
 function applyTheme(mode: ThemeMode, palette: ThemePalette) {
@@ -57,7 +59,7 @@ function applyTheme(mode: ThemeMode, palette: ThemePalette) {
 }
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [mode, setMode] = useState<ThemeMode>("system");
-  const [palette, setPalette] = useState<ThemePalette>("lime");
+  const [palette, setPalette] = useState<ThemePalette>(DEFAULT_PALETTE);
   const [ready, setReady] = useState(false);
   useEffect(() => {
     const read = () => {
@@ -110,15 +112,45 @@ const modes = [
   { value: "dark", label: "Dark", icon: Moon },
   { value: "system", label: "System", icon: Monitor },
 ] as const;
-export function ThemeToggle() {
+const PALETTES_PER_PAGE = 4;
+
+const palettePages: (typeof PALETTES)[number][][] = [];
+for (let i = 0; i < PALETTES.length; i += PALETTES_PER_PAGE) {
+  palettePages.push(PALETTES.slice(i, i + PALETTES_PER_PAGE));
+}
+
+export function ThemeToggle({ className }: { className?: string }) {
   const { mode, setMode, palette, setPalette } = useTheme();
   const [open, setOpen] = useState(false);
+  const [page, setPage] = useState(0);
+  const gridRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (open) {
+      setPage(0);
+      gridRef.current?.scrollTo({ left: 0 });
+    }
+  }, [open]);
+  const onGridScroll = () => {
+    const grid = gridRef.current;
+    if (!grid) return;
+    const index = Math.min(
+      palettePages.length - 1,
+      Math.max(0, Math.round(grid.scrollLeft / grid.clientWidth)),
+    );
+    setPage((current) => (current === index ? current : index));
+  };
+  const goToPage = (index: number) => {
+    gridRef.current?.scrollTo({
+      left: index * gridRef.current.clientWidth,
+      behavior: "smooth",
+    });
+  };
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button
           variant="ghost"
-          className="appearance-trigger"
+          className={cn("appearance-trigger", className)}
           aria-label="Customize appearance"
         >
           <Palette size={17} /> Appearance
@@ -151,55 +183,68 @@ export function ThemeToggle() {
         </fieldset>
         <fieldset className="appearance-fieldset">
           <legend>Color palette</legend>
-          <div className="palette-grid">
-            {PALETTES.map((item) => (
-              <label
-                className="palette-option"
-                key={item.value}
-                data-selected={palette === item.value}
-              >
-                <input
-                  type="radio"
-                  name="color-palette"
-                  aria-label={`${item.name} — ${item.description}`}
-                  value={item.value}
-                  checked={palette === item.value}
-                  onChange={() => setPalette(item.value)}
-                />
-                <span
-                  className="palette-preview"
-                  data-theme-preview={item.value}
-                  aria-hidden="true"
-                >
-                  <span className="palette-preview-bar" />
-                  <span className="palette-preview-surface">
-                    <span />
-                    <span />
-                    <b />
-                  </span>
-                  <span className="palette-preview-dots">
-                    <i />
-                    <i />
-                    <i />
-                  </span>
-                </span>
-                <span className="palette-option-caption">
-                  <span>
-                    <strong>{item.name}</strong>
-                    <small>{item.description}</small>
-                  </span>
-                  {palette === item.value && (
-                    <Check size={17} aria-hidden="true" />
-                  )}
-                </span>
-              </label>
+          <div className="palette-grid" ref={gridRef} onScroll={onGridScroll}>
+            {palettePages.map((items) => (
+              <div className="palette-page" key={items[0]?.value}>
+                {items.map((item) => (
+                  <label
+                    className="palette-option"
+                    key={item.value}
+                    data-selected={palette === item.value}
+                  >
+                    <input
+                      type="radio"
+                      name="color-palette"
+                      aria-label={`${item.name} — ${item.description}`}
+                      value={item.value}
+                      checked={palette === item.value}
+                      onChange={() => setPalette(item.value)}
+                    />
+                    <span
+                      className="palette-preview"
+                      data-theme-preview={item.value}
+                      aria-hidden="true"
+                    >
+                      <span className="palette-preview-bar" />
+                      <span className="palette-preview-surface">
+                        <span />
+                        <span />
+                        <b />
+                      </span>
+                      <span className="palette-preview-dots">
+                        <i />
+                        <i />
+                        <i />
+                      </span>
+                    </span>
+                    <span className="palette-option-caption">
+                      <span>
+                        <strong>{item.name}</strong>
+                        <small>{item.description}</small>
+                      </span>
+                      {palette === item.value && (
+                        <Check size={17} aria-hidden="true" />
+                      )}
+                    </span>
+                  </label>
+                ))}
+              </div>
             ))}
           </div>
+          {palettePages.length > 1 && (
+            <div className="palette-pages">
+              {palettePages.map((items, pageIndex) => (
+                <button
+                  key={items[0]?.value}
+                  type="button"
+                  data-active={pageIndex === page}
+                  aria-label={`Go to page ${pageIndex + 1}`}
+                  onClick={() => goToPage(pageIndex)}
+                />
+              ))}
+            </div>
+          )}
         </fieldset>
-        <div className="appearance-footer">
-          <span>Saved on this device</span>
-          <Button onClick={() => setOpen(false)}>Done</Button>
-        </div>
       </DialogContent>
     </Dialog>
   );

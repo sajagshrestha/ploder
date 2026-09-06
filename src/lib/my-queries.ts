@@ -46,10 +46,17 @@ export type MySet = {
   completed: boolean;
 };
 
+export type MyWorkoutSummary = MyWorkout & {
+  exerciseCount: number;
+  setCount: number;
+  volume: number;
+};
+
 export type MyWorkoutExercise = {
   id: number;
   exerciseId: number;
   exerciseName: string | null;
+  target?: string | null;
   imageUrl?: string | null;
   gifUrl?: string | null;
   orderIndex: number;
@@ -218,16 +225,37 @@ export function useMySplit(id: number | null) {
 
 export function useMyWorkouts(params: {
   page?: number;
+  pageSize?: number;
+  search?: string;
+  from?: string;
+  to?: string;
+  sort?: "newest" | "oldest";
   status?: "in_progress" | "completed";
 }) {
   const query = new URLSearchParams({ page: String(params.page ?? 1) });
-  if (params.status) {
-    query.set("status", params.status);
+  for (const [key, value] of Object.entries(params)) {
+    if (value !== undefined && value !== "") query.set(key, String(value));
   }
   return useQuery({
     queryKey: ["my", "workouts", params],
     queryFn: () =>
-      apiFetch<Paginated<MyWorkout>>(`/api/my/workouts?${query.toString()}`),
+      apiFetch<Paginated<MyWorkoutSummary>>(
+        `/api/my/workouts?${query.toString()}`,
+      ),
+  });
+}
+
+export function useBulkDeleteWorkouts() {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: (ids: number[]) =>
+      apiFetch<{ data: { id: number }[] }>("/api/my/workouts/bulk-delete", {
+        method: "POST",
+        body: JSON.stringify({ ids }),
+      }),
+    onSuccess: async () => {
+      await client.invalidateQueries({ queryKey: ["my"] });
+    },
   });
 }
 
@@ -451,7 +479,7 @@ function useMyMutation<TData, TVariables>(
       }
       if (isOfflineError(error)) {
         // Queued + optimistic state kept: the outbox syncs on reconnect.
-        toast.info("You're offline — saved here, will sync automatically.");
+        toast.info("Offline — will sync.");
         return;
       }
       restoreSnapshot(queryClient, context.snapshot);

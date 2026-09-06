@@ -7,7 +7,10 @@ import {
 } from "@tanstack/react-table/legacy";
 import { useState } from "react";
 import { toast } from "sonner";
-
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -17,18 +20,14 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+} from "@/components/ui/responsive-alert-dialog";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+} from "@/components/ui/responsive-dialog";
+import { SearchBar } from "@/components/ui/search-bar";
 import {
   Select,
   SelectContent,
@@ -138,12 +137,13 @@ function AdminUsers() {
         </div>
       </div>
 
-      <Input
-        className="w-64"
+      <SearchBar
+        containerClassName="w-full sm:w-64"
         placeholder="Search name or email…"
         value={search}
-        onChange={(event) => {
-          setSearch(event.target.value);
+        aria-label="Search users"
+        onValueChange={(value) => {
+          setSearch(value);
           setPage(1);
         }}
       />

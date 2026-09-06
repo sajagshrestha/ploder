@@ -1,4 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { TrainPage } from "@/components/app/training-page";
 
-export const Route = createFileRoute("/app/train")({ component: TrainPage });
+export const Route = createFileRoute("/app/train_/exercises")({
+  component: () => <TrainPage manage />,
+});

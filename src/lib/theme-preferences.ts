@@ -1,9 +1,10 @@
 export type ThemeMode = "light" | "dark" | "system";
-export type ThemePalette = "lime" | "rose" | "ocean" | "iris";
+export type ThemePalette = "neutral" | "lime" | "rose" | "ocean" | "iris";
 export const THEME_KEY = "ploder-theme";
 export const PALETTE_KEY = "ploder-palette";
+export const DEFAULT_PALETTE: ThemePalette = "neutral";
 export const LEGACY_PALETTES: Record<string, ThemePalette> = {
-  neutral: "lime",
+  neutral: "neutral",
   emerald: "lime",
   amber: "lime",
   blue: "ocean",
@@ -14,6 +15,11 @@ export const PALETTES: {
   name: string;
   description: string;
 }[] = [
+  {
+    value: "neutral",
+    name: "Classic",
+    description: "Clean, timeless neutrals",
+  },
   { value: "lime", name: "Lime", description: "Fresh greens" },
   { value: "rose", name: "Rose", description: "Soft pinks" },
   { value: "ocean", name: "Ocean", description: "Cool blues" },
@@ -28,11 +34,11 @@ export function resolvePalette(
     (legacy && Object.hasOwn(LEGACY_PALETTES, legacy)
       ? LEGACY_PALETTES[legacy]
       : undefined) ??
-    "lime"
+    DEFAULT_PALETTE
   );
 }
 export function resolveMode(value: string | null): ThemeMode {
   return value === "light" || value === "dark" ? value : "system";
 }
 // Run before first paint; keep the migration identical to the provider.
-export const THEME_INIT_SCRIPT = `(function(){var r=document.documentElement;var m='system',p='lime';try{var s=localStorage.getItem('${THEME_KEY}');m=s==='light'||s==='dark'?s:'system';var v=localStorage.getItem('${PALETTE_KEY}');p=${JSON.stringify(PALETTES.map((palette) => palette.value))}.indexOf(v)>=0?v:(Object.entries(${JSON.stringify(LEGACY_PALETTES)}).find(function(e){return e[0]===localStorage.getItem('ploder-accent')})||['','lime'])[1]}catch(e){}var d=m==='dark'||(m==='system'&&window.matchMedia('(prefers-color-scheme: dark)').matches);r.classList.toggle('dark',d);r.style.colorScheme=d?'dark':'light';r.setAttribute('data-palette',p);r.removeAttribute('data-accent')})();`;
+export const THEME_INIT_SCRIPT = `(function(){var r=document.documentElement;var m='system',p='${DEFAULT_PALETTE}';try{var s=localStorage.getItem('${THEME_KEY}');m=s==='light'||s==='dark'?s:'system';var v=localStorage.getItem('${PALETTE_KEY}');p=${JSON.stringify(PALETTES.map((palette) => palette.value))}.indexOf(v)>=0?v:(Object.entries(${JSON.stringify(LEGACY_PALETTES)}).find(function(e){return e[0]===localStorage.getItem('ploder-accent')})||['','${DEFAULT_PALETTE}'])[1]}catch(e){}var d=m==='dark'||(m==='system'&&window.matchMedia('(prefers-color-scheme: dark)').matches);r.classList.toggle('dark',d);r.style.colorScheme=d?'dark':'light';r.setAttribute('data-palette',p);r.removeAttribute('data-accent')})();`;

@@ -3,10 +3,24 @@ import { CalendarDays, ChevronRight } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   type ActivityWorkout,
   calendarDays,
   groupActivity,
 } from "@/lib/activity";
+
+const PERIODS = [
+  { weeks: 5, label: "1 month" },
+  { weeks: 13, label: "3 months" },
+  { weeks: 26, label: "6 months" },
+  { weeks: 53, label: "1 year" },
+] as const;
 
 export function ActivityHeatmap({ workouts }: { workouts: ActivityWorkout[] }) {
   const [weeks, setWeeks] = useState(13);
@@ -33,34 +47,34 @@ export function ActivityHeatmap({ workouts }: { workouts: ActivityWorkout[] }) {
     <section className="dashboard-panel activity-panel">
       <div className="panel-heading">
         <div>
-          <p className="eyebrow">SHOWING UP ADDS UP</p>
-          <h2>Training consistency</h2>
+          <h2>Consistency</h2>
         </div>
-        <fieldset className="segmented" aria-label="Activity period">
-          {[
-            { weeks: 5, label: "1 month" },
-            { weeks: 13, label: "3 months" },
-            { weeks: 26, label: "6 months" },
-            { weeks: 53, label: "1 year" },
-          ].map((period) => (
-            <button
-              key={period.weeks}
-              type="button"
-              aria-pressed={weeks === period.weeks}
-              onClick={() => {
-                setWeeks(period.weeks);
-                setSelected(null);
-                setFocused(null);
-              }}
-            >
-              {period.label}
-            </button>
-          ))}
-        </fieldset>
+        <Select
+          value={String(weeks)}
+          onValueChange={(value) => {
+            setWeeks(Number(value));
+            setSelected(null);
+            setFocused(null);
+          }}
+        >
+          <SelectTrigger
+            className="w-32"
+            size="sm"
+            aria-label="Activity period"
+          >
+            <SelectValue placeholder="Period" />
+          </SelectTrigger>
+          <SelectContent align="end">
+            {PERIODS.map((period) => (
+              <SelectItem key={period.weeks} value={String(period.weeks)}>
+                {period.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
       <p className="activity-caption">
-        <strong>{sessions} workouts</strong> across {activeDays} active days.
-        Every session counts.
+        <strong>{sessions} workouts</strong> · {activeDays} days.
       </p>
       <ScrollArea
         ref={scrollRef}
@@ -152,15 +166,8 @@ export function ActivityHeatmap({ workouts }: { workouts: ActivityWorkout[] }) {
       </ScrollArea>
       <div className="heatmap-footer">
         <span>
-          <CalendarDays size={14} /> Select a day to explore your sessions
+          <CalendarDays size={14} /> Tap a day
         </span>
-        <div className="heatmap-legend">
-          Less{" "}
-          {[0, 1, 2, 3, 4].map((n) => (
-            <i key={n} data-level={n} />
-          ))}{" "}
-          More
-        </div>
       </div>
       {selected && (
         <div className="activity-selection" aria-live="polite">
@@ -181,9 +188,7 @@ export function ActivityHeatmap({ workouts }: { workouts: ActivityWorkout[] }) {
               </Link>
             ))
           ) : (
-            <p>
-              No completed workouts on this day. Rest is part of the process.
-            </p>
+            <p>Rest day.</p>
           )}
         </div>
       )}

@@ -53,6 +53,9 @@ export const splitsRoutes = new Hono<AppEnv>()
         splitDayExerciseId: splitDayExercises.id,
         exerciseId: splitDayExercises.exerciseId,
         exerciseName: exercises.name,
+        target: exercises.target,
+        imageUrl: exercises.imageUrl,
+        gifUrl: exercises.gifUrl,
         exerciseOrderIndex: splitDayExercises.orderIndex,
         targetSets: splitDayExercises.targetSets,
         targetRepMin: splitDayExercises.targetRepMin,
@@ -88,6 +91,9 @@ export const splitsRoutes = new Hono<AppEnv>()
           splitDayExerciseId: day.splitDayExerciseId,
           exerciseId: day.exerciseId,
           exerciseName: day.exerciseName,
+          target: day.target,
+          imageUrl: day.imageUrl,
+          gifUrl: day.gifUrl,
           orderIndex: day.exerciseOrderIndex,
           targetSets: day.targetSets,
           targetRepMin: day.targetRepMin,
@@ -142,7 +148,7 @@ export const splitsRoutes = new Hono<AppEnv>()
     return context.json({ data: row }, 201);
   })
   .patch("/days/:dayId", async (context) => {
-    const { dayId } = idParam.parse(context.req.param());
+    const { id: dayId } = idParam.parse({ id: context.req.param("dayId") });
     const body = splitDayUpdateSchema.parse(await context.req.json());
     const [row] = await db
       .update(splitDays)
@@ -156,7 +162,7 @@ export const splitsRoutes = new Hono<AppEnv>()
     return context.json({ data: row });
   })
   .delete("/days/:dayId", async (context) => {
-    const { dayId } = idParam.parse(context.req.param());
+    const { id: dayId } = idParam.parse({ id: context.req.param("dayId") });
     const [row] = await db
       .delete(splitDays)
       .where(eq(splitDays.id, dayId))
@@ -169,7 +175,7 @@ export const splitsRoutes = new Hono<AppEnv>()
   })
   // Exercises within a split day
   .post("/days/:dayId/exercises", async (context) => {
-    const { dayId } = idParam.parse(context.req.param());
+    const { id: dayId } = idParam.parse({ id: context.req.param("dayId") });
     const body = splitDayExerciseCreateSchema.parse(await context.req.json());
     const [row] = await db
       .insert(splitDayExercises)

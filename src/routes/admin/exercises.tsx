@@ -5,10 +5,12 @@ import {
   getCoreRowModel,
   useLegacyTable as useReactTable,
 } from "@tanstack/react-table/legacy";
-import { Dumbbell } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
-
+import { ExerciseThumbnail } from "@/components/app/exercise-thumbnail";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -18,16 +20,14 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { Button } from "@/components/ui/button";
+} from "@/components/ui/responsive-alert-dialog";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+} from "@/components/ui/responsive-dialog";
+import { SearchBar } from "@/components/ui/search-bar";
 import {
   Select,
   SelectContent,
@@ -112,26 +112,6 @@ type ExerciseValues = {
   imageUrl: string | null;
 };
 
-function ExerciseImage({ url, name }: { url: string | null; name: string }) {
-  if (!url) {
-    return (
-      <div className="flex size-10 shrink-0 items-center justify-center rounded-md bg-muted text-muted-foreground">
-        <Dumbbell className="size-5" />
-      </div>
-    );
-  }
-  return (
-    <div className="size-10 shrink-0 overflow-hidden rounded-md bg-white">
-      <img
-        alt={name}
-        className="size-full object-cover mix-blend-multiply"
-        loading="lazy"
-        src={url}
-      />
-    </div>
-  );
-}
-
 function AdminExercises() {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
@@ -156,7 +136,11 @@ function AdminExercises() {
       id: "image",
       header: () => <span className="sr-only">Image</span>,
       cell: ({ row }) => (
-        <ExerciseImage name={row.original.name} url={row.original.imageUrl} />
+        <ExerciseThumbnail
+          name={row.original.name}
+          exerciseId={row.original.id}
+          src={row.original.imageUrl ?? row.original.gifUrl}
+        />
       ),
     },
     {
@@ -165,6 +149,9 @@ function AdminExercises() {
       cell: ({ row }) => (
         <div>
           <p className="font-medium">{row.original.name}</p>
+          <Badge variant="secondary" className="mt-1 capitalize">
+            {row.original.target || row.original.muscleGroup}
+          </Badge>
           {row.original.alias && (
             <p className="text-xs text-muted-foreground">
               Also: {row.original.alias}
@@ -296,12 +283,13 @@ function AdminExercises() {
       </div>
 
       <div className="flex flex-wrap items-center gap-2">
-        <Input
-          className="w-52"
+        <SearchBar
+          containerClassName="w-full sm:w-52"
           placeholder="Search name…"
           value={search}
-          onChange={(event) => {
-            setSearch(event.target.value);
+          aria-label="Search exercises"
+          onValueChange={(value) => {
+            setSearch(value);
             setPage(1);
           }}
         />

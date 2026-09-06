@@ -323,10 +323,8 @@ function SignedInAdminLayout() {
             ))}
           </nav>
           <div className="drawer-footer">
-            <div className="drawer-row">
-              <ThemeToggle />
-              <InstallPrompt />
-            </div>
+            <ThemeToggle className="desktop-nav-link" />
+            <InstallPrompt />
             <div className="sidebar-profile">
               <UserButton />
               <div>

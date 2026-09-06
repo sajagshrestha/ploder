@@ -2,9 +2,12 @@ import { createFileRoute, useBlocker } from "@tanstack/react-router";
 import { Minus, Plus, RotateCcw, Scale, Trash2 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
+import { ChartSkeleton } from "@/components/app/loading-skeletons";
 import { ProgressChart } from "@/components/app/progress-chart";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Dialog,
   DialogContent,
@@ -12,10 +15,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Skeleton } from "@/components/ui/skeleton";
+} from "@/components/ui/responsive-dialog";
 import { dateKey } from "@/lib/activity";
 import {
   useDeleteBodyWeight,
@@ -123,28 +123,26 @@ function WeightPage() {
       setWeight("");
       defaultedRef.current = false;
       setPage(1);
-      toast.success("Weigh-in saved");
+      toast.success("Saved");
       blocker.proceed();
     } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : "Couldn't save weigh-in",
-      );
+      toast.error(error instanceof Error ? error.message : "Couldn't save");
     }
   };
   const submit = (event: React.FormEvent) => {
     event.preventDefault();
     const value = Number(weight);
     if (!weight.trim() || !Number.isFinite(value) || value <= 0) {
-      toast.error("Enter a weight greater than zero");
+      toast.error("Enter weight > 0");
       return;
     }
     toast.promise(logWeight.mutateAsync({ weight: value, recordedAt: date }), {
-      loading: "Saving weigh-in…",
+      loading: "Saving…",
       success: () => {
         setWeight("");
         defaultedRef.current = false;
         setPage(1);
-        return "Weigh-in saved";
+        return "Saved";
       },
       error: (error) => error.message,
     });
@@ -153,14 +151,9 @@ function WeightPage() {
     <div className="progress-page">
       <div className="page-heading">
         <div>
-          <p className="eyebrow">CHECK IN WITH YOURSELF</p>
           <h1>
-            Body weight<span className="heading-dot">.</span>
+            Weight<span className="heading-dot">.</span>
           </h1>
-          <p>
-            A single number is just a snapshot. Regular check-ins reveal your
-            pattern.
-          </p>
         </div>
         <span className="icon-tile blue">
           <Scale size={20} />
@@ -170,16 +163,15 @@ function WeightPage() {
         <section className="dashboard-panel">
           <div className="panel-heading">
             <div>
-              <p className="eyebrow">CHECK IN WITH YOURSELF</p>
-              <h2>Body weight trend</h2>
+              <h2>Trend</h2>
             </div>
             <Scale size={19} />
           </div>
           {latestHistory.isPending ? (
-            <Skeleton className="h-52" />
+            <ChartSkeleton />
           ) : latestHistory.isError ? (
             <div className="inline-error">
-              Couldn’t load weigh-ins.{" "}
+              Couldn't load.{" "}
               <button type="button" onClick={() => latestHistory.refetch()}>
                 Retry
               </button>
@@ -192,38 +184,31 @@ function WeightPage() {
               </p>
               <p className="weight-delta">
                 {delta !== null
-                  ? `${delta > 0 ? "+" : ""}${delta.toFixed(1)} ${unit} since your previous check-in`
-                  : "Your first check-in. A starting point to build on."}
+                  ? `${delta > 0 ? "+" : ""}${delta.toFixed(1)} ${unit} vs prev`
+                  : "First check-in."}
               </p>
               <ProgressChart
                 rows={weightRows}
-                label="Body weight across your latest 30 weigh-ins"
+                label="Weight · last 30"
                 kind="line"
                 unit={unit}
               />
-              <p className="chart-data">
-                Showing your latest {weightRows.length} weigh-ins.
-              </p>
+              <p className="chart-data">Latest {weightRows.length}.</p>
             </>
           ) : (
             <div className="plan-empty">
               <Scale size={28} />
-              <h3>A starting point, not a score.</h3>
-              <p>Log your first weigh-in to start seeing your trend here.</p>
+              <h3>No data.</h3>
+              <p>Log first weigh-in.</p>
             </div>
           )}
         </section>
         <section className="dashboard-panel">
           <div className="panel-heading">
             <div>
-              <p className="eyebrow">A MOMENT FOR YOU</p>
-              <h2>Log a weigh-in</h2>
+              <h2>Log weight</h2>
             </div>
           </div>
-          <p className="form-help">
-            Big targets for the gym floor — tap to fine-tune, or type your exact
-            number.
-          </p>
           <form className="form-stack" onSubmit={submit}>
             <div>
               <Label htmlFor="bw-weight">Weight</Label>
@@ -281,18 +266,10 @@ function WeightPage() {
                     {liveDelta > 0 ? "+" : ""}
                     {liveDelta.toFixed(1)} {unit}
                   </strong>{" "}
-                  vs last (
-                  {new Date(`${latest.recordedAt}T12:00:00`).toLocaleDateString(
-                    undefined,
-                    {
-                      month: "short",
-                      day: "numeric",
-                    },
-                  )}
-                  )
+                  vs last
                 </>
               ) : (
-                "Your delta vs your last check-in appears here."
+                "Delta appears here."
               )}
             </p>
             <fieldset className="weighin-fieldset">
@@ -355,8 +332,8 @@ function WeightPage() {
                 {logWeight.isPending
                   ? "Saving…"
                   : weightValid
-                    ? `Save ${parsedWeight.toFixed(1)} ${unit}`
-                    : "Save weigh-in"}
+                    ? `Save ${parsedWeight.toFixed(1)}`
+                    : "Save"}
               </Button>
               {isDirty && (
                 <Button
@@ -383,11 +360,11 @@ function WeightPage() {
       >
         <DialogContent className="sm:max-w-sm">
           <DialogHeader>
-            <DialogTitle>Unsaved weigh-in</DialogTitle>
+            <DialogTitle>Unsaved?</DialogTitle>
             <DialogDescription>
-              You have an unsaved weigh-in
-              {weightValid ? ` of ${parsedWeight.toFixed(1)} ${unit}` : ""}.
-              Save it before leaving, or discard your changes.
+              Save
+              {weightValid ? ` ${parsedWeight.toFixed(1)} ${unit}` : ""} or
+              discard.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="flex-col gap-2 sm:flex-col">
@@ -396,7 +373,7 @@ function WeightPage() {
               disabled={logWeight.isPending || !weightValid}
               onClick={saveAndProceed}
             >
-              {logWeight.isPending ? "Saving…" : "Save weigh-in"}
+              {logWeight.isPending ? "Saving…" : "Save"}
             </Button>
             <Button
               className="w-full"
@@ -407,7 +384,7 @@ function WeightPage() {
                 }
               }}
             >
-              Discard changes
+              Discard
             </Button>
             <Button
               className="w-full"
@@ -425,12 +402,12 @@ function WeightPage() {
       </Dialog>
       <section className="dashboard-panel">
         <div className="panel-heading">
-          <h2>Your check-ins</h2>
-          <span className="chart-data">{history.data?.total ?? 0} entries</span>
+          <h2>History</h2>
+          <span className="chart-data">{history.data?.total ?? 0}</span>
         </div>
         {history.isError ? (
           <div className="inline-error">
-            Couldn’t load check-ins.{" "}
+            Couldn't load.{" "}
             <button type="button" onClick={() => history.refetch()}>
               Retry
             </button>
@@ -466,9 +443,7 @@ function WeightPage() {
           </div>
         )}
         {history.data?.total === 0 && (
-          <p className="form-help">
-            Your check-ins will appear here once you save your first weigh-in.
-          </p>
+          <p className="form-help">No check-ins yet.</p>
         )}
         {totalPages > 1 && (
           <div className="mt-5 flex items-center justify-between gap-3">
@@ -499,13 +474,13 @@ function WeightPage() {
       <ConfirmDialog
         open={deleting !== null}
         onOpenChange={(open) => !open && setDeleting(null)}
-        title="Delete this weigh-in?"
+        title="Delete entry?"
         description={
           deleting
-            ? `This permanently removes your ${deleting.weight} ${unit} check-in from ${new Date(`${deleting.recordedAt}T12:00:00`).toLocaleDateString(undefined, { dateStyle: "medium" })}. This can't be undone.`
-            : "This permanently removes this check-in. This can't be undone."
+            ? `Removes ${deleting.weight} ${unit} (${deleting.recordedAt}).`
+            : "Removes entry."
         }
-        confirmLabel="Delete entry"
+        confirmLabel="Delete"
         loading={remove.isPending}
         onConfirm={() => {
           if (!deleting) return;

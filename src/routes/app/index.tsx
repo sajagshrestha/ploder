@@ -14,6 +14,10 @@ import {
 import { useMemo } from "react";
 import { toast } from "sonner";
 import { ActivityHeatmap } from "@/components/app/activity-heatmap";
+import {
+  PageHeadingSkeleton,
+  PanelSkeleton,
+} from "@/components/app/loading-skeletons";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { dateKey, groupActivity } from "@/lib/activity";
@@ -65,22 +69,29 @@ function TodayPage() {
   };
   if (summary.isPending)
     return (
-      <div className="space-y-5">
-        <Skeleton className="h-14 w-2/3" />
-        <Skeleton className="h-72 w-full rounded-3xl" />
-        <Skeleton className="h-48 w-full rounded-3xl" />
+      <div className="overview-page" aria-hidden="true">
+        <PageHeadingSkeleton />
+        <div className="dashboard-top-grid">
+          <Skeleton className="h-[286px] w-full rounded-2xl" />
+          <PanelSkeleton rows={2} className="week-panel" />
+        </div>
+        <div className="stats-grid">
+          <Skeleton className="h-28 rounded-2xl" />
+          <Skeleton className="h-28 rounded-2xl" />
+        </div>
+        <div className="dashboard-middle-grid">
+          <PanelSkeleton rows={5} />
+          <PanelSkeleton rows={3} />
+        </div>
       </div>
     );
   if (summary.isError)
     return (
       <div className="app-empty">
         <Dumbbell />
-        <h1>Let’s reconnect.</h1>
-        <p>
-          We couldn’t load your training data. Try again when you’re back
-          online.
-        </p>
-        <Button onClick={() => summary.refetch()}>Try again</Button>
+        <h1>Offline.</h1>
+        <p>Couldn't load data.</p>
+        <Button onClick={() => summary.refetch()}>Retry</Button>
       </div>
     );
   const data = summary.data.data;
@@ -89,31 +100,30 @@ function TodayPage() {
   const firstDay = days[0];
   const sessionName = data.activeWorkout?.name;
   const sessionParts = sessionName?.split("·").map((part) => part.trim());
-  const heroTitle =
-    sessionParts?.at(-1) || firstDay?.name || "Your next workout";
+  const heroTitle = sessionParts?.at(-1) || firstDay?.name || "Next workout";
   const heroPlan =
     sessionParts && sessionParts.length > 1
       ? sessionParts.slice(0, -1).join(" · ")
       : data.activeWorkout
-        ? "Continue your session"
-        : data.activeSplit?.name || "Train at your own pace";
+        ? "Continue"
+        : data.activeSplit?.name || "Freestyle";
   const weeklyCount = weekDays.filter((d) => d.done).length;
   const stats = [
     {
-      label: "Active days this week",
+      label: "Active days",
       value: activity.isError ? "—" : weeklyCount,
-      detail: "A fresh start every Monday",
+      detail: "Resets Monday",
       icon: Flame,
       color: "peach",
     },
     {
-      label: "Latest body weight",
+      label: "Weight",
       value: data.latestBodyWeight
         ? Number(data.latestBodyWeight.weight).toFixed(1)
         : "—",
       detail: data.latestBodyWeight
         ? `${me.data?.data.preferredUnit ?? "kg"} · ${new Date(`${data.latestBodyWeight.recordedAt}T12:00:00`).toLocaleDateString(undefined, { month: "short", day: "numeric" })}`
-        : "Log your first weigh-in",
+        : "Log weigh-in",
       icon: Scale,
       color: "blue",
       to: "/app/weight",
@@ -123,12 +133,10 @@ function TodayPage() {
     <div className="overview-page">
       <div className="page-heading">
         <div>
-          <p className="eyebrow">MAKE TODAY COUNT</p>
           <h1>
-            Let’s get stronger{name ? `, ${name}` : ""}
+            Hi{name ? `, ${name}` : ""}
             <span className="heading-dot">.</span>
           </h1>
-          <p>Your plan, your pace. A little progress every day.</p>
         </div>
         <span className="date-pill">
           <CalendarDays size={15} />
@@ -202,11 +210,7 @@ function TodayPage() {
             <strong>
               {activity.isPending || activity.isError ? "—" : weeklyCount}
             </strong>
-            <span>
-              active {weeklyCount === 1 ? "day" : "days"}
-              <br />
-              and counting
-            </span>
+            <span>active {weeklyCount === 1 ? "day" : "days"}</span>
           </div>
           <div className="week-strip">
             {weekDays.map((day) => (
@@ -234,12 +238,10 @@ function TodayPage() {
             ))}
           </div>
           <p className="week-note">
-            {weeklyCount
-              ? "You’re building momentum. Keep your rhythm."
-              : "Your next session is a great place to begin."}
+            {weeklyCount ? "Keep it up." : "Start today."}
           </p>
           <Link to="/app/history" className="text-link">
-            View your activity
+            View activity
             <ArrowRight size={15} />
           </Link>
         </section>
@@ -279,17 +281,16 @@ function TodayPage() {
       </div>
       <div className="dashboard-middle-grid">
         {activity.isPending ? (
-          <Skeleton className="h-80 w-full rounded-3xl" />
+          <PanelSkeleton rows={5} />
         ) : activity.isError ? (
           <section className="dashboard-panel activity-panel">
             <div className="panel-heading">
               <div>
-                <p className="eyebrow">SHOWING UP ADDS UP</p>
-                <h2>Training consistency</h2>
+                <h2>Consistency</h2>
               </div>
             </div>
             <div className="inline-error">
-              Couldn’t load activity.{" "}
+              No activity.{" "}
               <button type="button" onClick={() => activity.refetch()}>
                 Retry
               </button>
@@ -301,8 +302,7 @@ function TodayPage() {
         <section className="dashboard-panel plan-panel">
           <div className="panel-heading">
             <div>
-              <p className="eyebrow">A LITTLE STRUCTURE GOES A LONG WAY</p>
-              <h2>Your training plan</h2>
+              <h2>Training plan</h2>
             </div>
             <CalendarDays size={20} />
           </div>
@@ -334,9 +334,7 @@ function TodayPage() {
                       <strong>{day.name}</strong>
                       <small>
                         {day.exercises.length} exercises
-                        {data.activeWorkout
-                          ? " · Resume your active session first"
-                          : ""}
+                        {data.activeWorkout ? " · Resume first" : ""}
                       </small>
                     </span>
                     <ArrowUpRight size={17} />
@@ -345,27 +343,25 @@ function TodayPage() {
               </div>
               {activeSplit.isError && (
                 <div className="inline-error">
-                  Couldn’t load training days.{" "}
+                  No days.{" "}
                   <button type="button" onClick={() => activeSplit.refetch()}>
                     Retry
                   </button>
                 </div>
               )}
               <Link to="/app/splits" className="text-link">
-                Manage training plan
+                Manage plan
                 <ArrowRight size={15} />
               </Link>
             </>
           ) : (
             <div className="plan-empty">
               <CalendarDays size={28} />
-              <h3>Find your rhythm.</h3>
-              <p>
-                Choose a coach-built plan to give your week a little structure.
-              </p>
+              <h3>No plan yet.</h3>
+              <p>Pick a template to start.</p>
               <Button asChild>
                 <Link to="/app/splits">
-                  Explore training plans <ArrowRight size={16} />
+                  Browse plans <ArrowRight size={16} />
                 </Link>
               </Button>
             </div>
@@ -375,8 +371,7 @@ function TodayPage() {
       <section className="dashboard-panel">
         <div className="panel-heading">
           <div>
-            <p className="eyebrow">THE WORK YOU PUT IN</p>
-            <h2>Recent sessions</h2>
+            <h2>Recent</h2>
           </div>
           <Link to="/app/history" className="text-link">
             View all
@@ -416,15 +411,12 @@ function TodayPage() {
           {recent.data?.data.length === 0 && (
             <div className="inline-empty">
               <ArrowDownRight size={20} />
-              <p>
-                Your story starts with a session. Your workouts will appear
-                here.
-              </p>
+              <p>No sessions yet.</p>
             </div>
           )}
           {recent.isError && (
             <div className="inline-error">
-              Couldn’t load sessions.{" "}
+              No sessions.{" "}
               <button type="button" onClick={() => recent.refetch()}>
                 Retry
               </button>

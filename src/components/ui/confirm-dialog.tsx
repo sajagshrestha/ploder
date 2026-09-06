@@ -13,7 +13,7 @@ import {
   AlertDialogMedia,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
+} from "@/components/ui/responsive-alert-dialog";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 

@@ -8,7 +8,7 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
+} from "@/components/ui/responsive-dialog";
 
 type BeforeInstallPromptEvent = Event & {
   prompt: () => Promise<void>;

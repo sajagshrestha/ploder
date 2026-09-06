@@ -1,8 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { TrendingUp } from "lucide-react";
 import { useMemo, useState } from "react";
+import { PanelSkeleton } from "@/components/app/loading-skeletons";
 import { ProgressChart } from "@/components/app/progress-chart";
-import { Skeleton } from "@/components/ui/skeleton";
 import { useMe, useMyAnalytics } from "@/lib/my-queries";
 
 export const Route = createFileRoute("/app/progress")({
@@ -47,22 +47,17 @@ function ProgressPage() {
     <div className="progress-page">
       <div className="page-heading">
         <div>
-          <p className="eyebrow">TRAIN WITH FEEDBACK</p>
           <h1>
-            Know what is progressing<span className="heading-dot">.</span>
+            Progress<span className="heading-dot">.</span>
           </h1>
-          <p>
-            Follow training frequency, working-set volume, and performance on
-            every lift.
-          </p>
         </div>
         <span className="icon-tile lime">
           <TrendingUp size={20} />
         </span>
       </div>
 
-      <fieldset className="analytics-period" aria-label="Analytics period">
-        <legend>Time period</legend>
+      <fieldset className="analytics-period" aria-label="Period">
+        <legend>Period</legend>
         <div className="segmented">
           {[4, 8, 12, 24].map((period) => (
             <button
@@ -82,7 +77,7 @@ function ProgressPage() {
       ) : analytics.isError ? (
         <section className="dashboard-panel">
           <div className="inline-error">
-            Couldn’t load training analytics.{" "}
+            Couldn't load.{" "}
             <button type="button" onClick={() => analytics.refetch()}>
               Retry
             </button>
@@ -93,8 +88,7 @@ function ProgressPage() {
           <section className="dashboard-panel analytics-chart-panel">
             <div className="panel-heading analytics-heading">
               <div>
-                <p className="eyebrow">PROGRESSIVE OVERLOAD</p>
-                <h2>Workload over time</h2>
+                <h2>Workload</h2>
               </div>
               <fieldset className="segmented" aria-label="Workload metric">
                 {(Object.keys(metricMeta) as Metric[]).map((option) => (
@@ -109,10 +103,6 @@ function ProgressPage() {
                 ))}
               </fieldset>
             </div>
-            <p className="form-help">
-              Weekly totals from completed working sets. Use volume with reps
-              and lift performance; no single metric tells the whole story.
-            </p>
             {chartRows.some((row) => row.value > 0) ? (
               <ProgressChart
                 rows={chartRows}
@@ -122,21 +112,16 @@ function ProgressPage() {
                 rowHeader="Week of"
               />
             ) : (
-              <EmptyAnalytics text="Complete and log working sets to build your workload trend." />
+              <EmptyAnalytics text="Log sets to see trend." />
             )}
           </section>
 
           <section className="dashboard-panel">
             <div className="panel-heading">
               <div>
-                <p className="eyebrow">STIMULUS DISTRIBUTION</p>
-                <h2>Muscle-group frequency</h2>
+                <h2>Muscles</h2>
               </div>
             </div>
-            <p className="form-help">
-              Average distinct sessions and working sets per week for each
-              primary muscle group.
-            </p>
             {data.muscleGroups.length ? (
               <div className="muscle-frequency-list">
                 {data.muscleGroups.map((muscle) => (
@@ -162,21 +147,16 @@ function ProgressPage() {
                 ))}
               </div>
             ) : (
-              <EmptyAnalytics text="Your trained muscle groups will appear after your first completed workout." />
+              <EmptyAnalytics text="No data yet." />
             )}
           </section>
 
           <section className="dashboard-panel">
             <div className="panel-heading">
               <div>
-                <p className="eyebrow">LIFT BY LIFT</p>
-                <h2>Exercise progression</h2>
+                <h2>Lifts</h2>
               </div>
             </div>
-            <p className="form-help">
-              Best estimated 1RM set from your latest session compared with the
-              previous time you performed that exercise.
-            </p>
             {data.exercises.length ? (
               <div className="exercise-progress-list">
                 {data.exercises.map((exercise) => {
@@ -191,11 +171,11 @@ function ProgressPage() {
                         <span>{titleCase(exercise.muscleGroup)}</span>
                       </div>
                       <div className="lift-comparison">
-                        <span>Previous</span>
+                        <span>Prev</span>
                         <strong>
                           {exercise.previous
                             ? `${formatNumber(exercise.previous.weight, 1)} ${unit} × ${exercise.previous.reps}`
-                            : "First logged session"}
+                            : "First log"}
                         </strong>
                       </div>
                       <div className="lift-comparison current">
@@ -224,7 +204,7 @@ function ProgressPage() {
                 })}
               </div>
             ) : (
-              <EmptyAnalytics text="Log the same exercise in two completed sessions to see a useful comparison." />
+              <EmptyAnalytics text="Log twice to compare." />
             )}
           </section>
         </>
@@ -245,8 +225,9 @@ function EmptyAnalytics({ text }: { text: string }) {
 function AnalyticsSkeleton() {
   return (
     <div className="analytics-loading">
-      <Skeleton className="h-80 rounded-3xl" />
-      <Skeleton className="h-64 rounded-3xl" />
+      <PanelSkeleton chart />
+      <PanelSkeleton rows={5} />
+      <PanelSkeleton rows={4} />
     </div>
   );
 }

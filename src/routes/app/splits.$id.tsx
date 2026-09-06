@@ -2,10 +2,10 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { ArrowLeft, Check, Copy, Play } from "lucide-react";
 import { toast } from "sonner";
 
+import { SplitDetailSkeleton } from "@/components/app/loading-skeletons";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
 import {
   useCloneTemplate,
   useMySplit,
@@ -37,20 +37,15 @@ function SplitDetailPage() {
   const detail = isTemplate ? template : own;
 
   if (detail.isPending) {
-    return (
-      <div className="space-y-4">
-        <Skeleton className="h-8 w-2/3" />
-        <Skeleton className="h-32 w-full rounded-xl" />
-      </div>
-    );
+    return <SplitDetailSkeleton />;
   }
 
   if (detail.isError || !detail.data) {
     return (
       <div className="space-y-2 pt-8 text-center">
-        <p className="font-semibold">Split not found</p>
+        <p className="font-semibold">Not found</p>
         <Button asChild variant="outline">
-          <Link to="/app/splits">Back to splits</Link>
+          <Link to="/app/splits">Back</Link>
         </Button>
       </div>
     );
@@ -63,7 +58,7 @@ function SplitDetailPage() {
       <Button asChild className="-ml-2" size="sm" variant="ghost">
         <Link to="/app/splits">
           <ArrowLeft className="size-4" />
-          Splits
+          Plans
         </Link>
       </Button>
       <div>
@@ -85,17 +80,17 @@ function SplitDetailPage() {
           size="lg"
           onClick={() =>
             toast.promise(clone.mutateAsync({ templateId: numericId }), {
-              loading: "Cloning…",
+              loading: "Adding…",
               success: () => {
                 navigate({ to: "/app/splits" });
-                return "Split added to your collection";
+                return "Added";
               },
               error: (error) => error.message,
             })
           }
         >
           <Copy className="size-4" />
-          Clone to my splits
+          Use plan
         </Button>
       ) : (
         "isActive" in split &&
@@ -110,14 +105,14 @@ function SplitDetailPage() {
                 update.mutateAsync({ id: numericId, isActive: true }),
                 {
                   loading: "Activating…",
-                  success: "Split activated",
+                  success: "Active",
                   error: (error) => error.message,
                 },
               )
             }
           >
             <Check className="size-4" />
-            Set as active split
+            Set active
           </Button>
         )
       )}
@@ -139,10 +134,10 @@ function SplitDetailPage() {
                           splitDayId: day.id,
                         }),
                         {
-                          loading: "Starting workout…",
+                          loading: "Starting…",
                           success: () => {
                             navigate({ to: "/app/train" });
-                            return "Workout started";
+                            return "Started";
                           },
                           error: (error) => error.message,
                         },
@@ -164,22 +159,23 @@ function SplitDetailPage() {
                   <span className="min-w-0 flex-1 truncate font-medium">
                     {item.exerciseName ?? "Exercise"}
                   </span>
+                  <Badge variant="outline" className="shrink-0 capitalize">
+                    {item.target || "Target"}
+                  </Badge>
                   <span className="shrink-0 text-xs text-muted-foreground">
                     {item.targetSets} × {item.targetRepMin}–{item.targetRepMax}
                   </span>
                 </div>
               ))}
               {day.exercises.length === 0 && (
-                <p className="text-sm text-muted-foreground">
-                  No exercises in this day yet.
-                </p>
+                <p className="text-sm text-muted-foreground">Empty.</p>
               )}
             </CardContent>
           </Card>
         ))}
         {split.days.length === 0 && (
           <p className="rounded-xl border border-dashed p-6 text-center text-sm text-muted-foreground">
-            This split has no training days yet.
+            No days yet.
           </p>
         )}
       </div>

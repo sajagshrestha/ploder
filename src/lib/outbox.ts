@@ -61,11 +61,7 @@ export async function replayOutbox(
         queryClient.invalidateQueries({ queryKey: ["my"] }),
         queryClient.invalidateQueries({ queryKey: ["me"] }),
       ]);
-      toast.success(
-        synced === 1
-          ? "Synced 1 offline change"
-          : `Synced ${synced} offline changes`,
-      );
+      toast.success(synced === 1 ? "Synced" : `Synced ${synced}`);
     }
     return { synced };
   } finally {

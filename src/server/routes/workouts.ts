@@ -69,6 +69,7 @@ export const workoutsRoutes = new Hono<AppEnv>()
         id: workoutExercises.id,
         exerciseId: workoutExercises.exerciseId,
         exerciseName: exercises.name,
+        target: exercises.target,
         orderIndex: workoutExercises.orderIndex,
         notes: workoutExercises.notes,
       })

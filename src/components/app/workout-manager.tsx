@@ -1,4 +1,4 @@
-import { Check, GripVertical, Plus, Trash2 } from "lucide-react";
+import { GripVertical, Plus, Trash2 } from "lucide-react";
 import { motion, useReducedMotion } from "motion/react";
 import { useEffect, useRef, useState } from "react";
 import { DndProvider, useDrag, useDragLayer, useDrop } from "react-dnd";
@@ -62,7 +62,6 @@ function ManagerList({
   const [rows, setRows] = useState(exercises);
   const draft = useRef(exercises);
   const [removing, setRemoving] = useState<MyWorkoutExercise | null>(null);
-  const [status, setStatus] = useState("");
   const busy = reorder.isPending || remove.isPending;
   const waitingForSync = exercises.some((exercise) => exercise.id < 0);
   const [, listDrop] = useDrop(
@@ -94,21 +93,15 @@ function ManagerList({
     const ids = draft.current.map((row) => row.id);
     if (busy || ids.every((id, index) => id === exercises[index]?.id)) return;
     onOrderChange(ids);
-    setStatus("Saving order…");
     try {
       await reorder.mutateAsync({ workoutId, exerciseIds: ids });
-      setStatus("Order saved");
     } catch (error) {
       if (error instanceof TypeError || !navigator.onLine) {
-        setStatus("Saved on this device · waiting to sync");
-      } else {
-        update(exercises);
-        onOrderChange(exercises.map((row) => row.id));
-        setStatus("Couldn’t save order. Try again.");
-        toast.error(
-          error instanceof Error ? error.message : "Couldn’t save order",
-        );
+        return;
       }
+      update(exercises);
+      onOrderChange(exercises.map((row) => row.id));
+      toast.error(error instanceof Error ? error.message : "Couldn't save");
     }
   };
   return (
@@ -118,9 +111,7 @@ function ManagerList({
           <h2>
             Exercises <span>{rows.length}</span>
           </h2>
-          <p id="reorder-help">
-            Drag the handles to reorder. Changes save automatically.
-          </p>
+          <p id="reorder-help">Drag to reorder.</p>
         </div>
         <Button onClick={onAdd} disabled={busy}>
           <Plus size={16} /> Add exercise
@@ -129,14 +120,6 @@ function ManagerList({
       <p className="sr-only" id="reorder-keyboard-help">
         Use the up and down arrow keys on a drag handle to move the exercise.
       </p>
-      <div className="manager-save-status" role="status">
-        {reorder.isPending
-          ? "Saving order…"
-          : waitingForSync
-            ? "Waiting for new exercises to sync before reordering…"
-            : status || "Your workout order"}
-        {status === "Order saved" && <Check size={14} />}
-      </div>
       <ol
         ref={(node) => {
           listDrop(node);
@@ -168,7 +151,7 @@ function ManagerList({
         ))}
       </ol>
       {rows.length === 0 && (
-        <p className="inline-empty">Add an exercise to build your session.</p>
+        <p className="inline-empty">Add exercise to start.</p>
       )}
       <ExerciseDragPreview />
       <ConfirmDialog
@@ -177,7 +160,7 @@ function ManagerList({
           if (!open) setRemoving(null);
         }}
         title={`Remove ${removing?.exerciseName ?? "exercise"}?`}
-        description="This removes the exercise and its logged sets from this session."
+        description="Removes exercise + sets."
         confirmLabel="Remove exercise"
         loading={remove.isPending}
         onConfirm={() => {
@@ -304,21 +287,25 @@ function SortableExercise({
         >
           <GripVertical size={20} />
         </button>
-        <button
-          type="button"
-          className="manager-exercise manager-exercise-with-image"
-          onClick={onSelect}
-          disabled={disabled}
-        >
-          <ExerciseThumbnail src={exercise.imageUrl ?? exercise.gifUrl} />
-          <span className="manager-exercise-copy">
+        <div className="manager-exercise manager-exercise-with-image">
+          <ExerciseThumbnail
+            src={exercise.imageUrl ?? exercise.gifUrl}
+            exerciseId={exercise.exerciseId}
+            name={exercise.exerciseName ?? "Exercise"}
+          />
+          <button
+            type="button"
+            onClick={onSelect}
+            disabled={disabled}
+            className="manager-exercise-copy text-left"
+          >
             <strong>{exercise.exerciseName ?? "Exercise"}</strong>
             <span>
               {index + 1} · {exercise.sets.length}{" "}
               {exercise.sets.length === 1 ? "set" : "sets"}
             </span>
-          </span>
-        </button>
+          </button>
+        </div>
         <button
           type="button"
           className="manager-delete"

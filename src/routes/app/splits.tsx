@@ -2,6 +2,10 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { CalendarDays, Check, ChevronRight, Copy, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { ListSkeleton } from "@/components/app/loading-skeletons";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -12,11 +16,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
+} from "@/components/ui/responsive-alert-dialog";
 import {
   useCloneTemplate,
   useDeleteMySplit,
@@ -40,13 +40,7 @@ function SplitsPage() {
   return (
     <div className="space-y-4">
       <div>
-        <p className="eyebrow">A PLAN YOU CAN MAKE YOUR OWN</p>
-        <h1 className="text-2xl font-bold tracking-tight">
-          Find your training rhythm.
-        </h1>
-        <p className="text-sm text-muted-foreground">
-          Your training weeks, built from coach templates.
-        </p>
+        <h1 className="text-2xl font-bold tracking-tight">Plans.</h1>
       </div>
 
       <div className="grid max-w-md grid-cols-2 gap-1 rounded-xl bg-muted p-1">
@@ -58,14 +52,14 @@ function SplitsPage() {
             variant={tab === value ? "default" : "ghost"}
             onClick={() => setTab(value)}
           >
-            {value === "mine" ? "My plans" : "Explore templates"}
+            {value === "mine" ? "Mine" : "Templates"}
           </Button>
         ))}
       </div>
 
       {(tab === "mine" ? mine.isError : templates.isError) && (
         <div className="inline-error">
-          Couldn’t load plans.{" "}
+          Couldn't load.{" "}
           <button
             type="button"
             onClick={() =>
@@ -78,7 +72,13 @@ function SplitsPage() {
       )}
       {tab === "mine" && (
         <div className="grid items-start gap-4 xl:grid-cols-2">
-          {mine.isPending && <Skeleton className="h-24 w-full rounded-xl" />}
+          {mine.isPending && (
+            <ListSkeleton
+              count={4}
+              tall
+              className="xl:col-span-2 xl:grid-cols-2"
+            />
+          )}
           {mine.data?.data.map((split) => (
             <Card key={split.id}>
               <CardContent className="flex items-center gap-3 py-4">
@@ -106,7 +106,7 @@ function SplitsPage() {
                             }),
                             {
                               loading: "Activating…",
-                              success: "Split activated",
+                              success: "Active",
                               error: (error) => error.message,
                             },
                           )
@@ -133,8 +133,7 @@ function SplitsPage() {
                             Delete "{split.name}"?
                           </AlertDialogTitle>
                           <AlertDialogDescription>
-                            This split and all its training days will be
-                            permanently removed. Past workouts are kept.
+                            Removes split + days. Past workouts kept.
                           </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
@@ -144,12 +143,12 @@ function SplitsPage() {
                             onClick={() =>
                               toast.promise(remove.mutateAsync(split.id), {
                                 loading: "Deleting…",
-                                success: "Split deleted",
+                                success: "Deleted",
                                 error: (error) => error.message,
                               })
                             }
                           >
-                            Delete split
+                            Delete
                           </AlertDialogAction>
                         </AlertDialogFooter>
                       </AlertDialogContent>
@@ -170,13 +169,13 @@ function SplitsPage() {
           ))}
           {mine.data?.data.length === 0 && (
             <div className="rounded-xl border border-dashed p-6 text-center text-sm text-muted-foreground">
-              No splits yet. Choose a template to start.
+              No plans yet.
               <Button
                 className="mt-3 w-full"
                 variant="outline"
                 onClick={() => setTab("templates")}
               >
-                Browse templates
+                Browse
               </Button>
             </div>
           )}
@@ -186,7 +185,12 @@ function SplitsPage() {
       {tab === "templates" && (
         <div className="grid items-start gap-4 xl:grid-cols-2">
           {templates.isPending && (
-            <Skeleton className="h-24 w-full rounded-xl" />
+            <ListSkeleton
+              count={4}
+              media
+              tall
+              className="xl:col-span-2 xl:grid-cols-2"
+            />
           )}
           {templates.data?.data.map((template) => (
             <Card key={template.id}>
@@ -223,10 +227,10 @@ function SplitsPage() {
                     toast.promise(
                       clone.mutateAsync({ templateId: template.id }),
                       {
-                        loading: "Cloning…",
+                        loading: "Adding…",
                         success: () => {
                           setTab("mine");
-                          return "Split added to your collection";
+                          return "Added";
                         },
                         error: (error) => error.message,
                       },
@@ -234,7 +238,7 @@ function SplitsPage() {
                   }
                 >
                   <Copy className="size-3" />
-                  Use this plan
+                  Use plan
                 </Button>
               </CardContent>
             </Card>

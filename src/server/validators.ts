@@ -84,6 +84,30 @@ export const workoutListQuery = paginationQuery.extend({
   status: z.enum(["in_progress", "completed"]).optional(),
 });
 
+export const myWorkoutHistoryQuery = workoutListQuery
+  .extend({
+    search: z.string().trim().max(120).optional(),
+    from: z.iso.datetime().optional(),
+    to: z.iso.datetime().optional(),
+    sort: z.enum(["newest", "oldest"]).default("newest"),
+  })
+  .refine(
+    (value) =>
+      !value.from || !value.to || Date.parse(value.from) < Date.parse(value.to),
+    {
+      message: "Start date must be before end date",
+      path: ["to"],
+    },
+  );
+
+export const myWorkoutBulkDeleteSchema = z.object({
+  ids: z
+    .array(z.number().int().positive())
+    .min(1)
+    .max(100)
+    .refine((ids) => new Set(ids).size === ids.length, "Duplicate workouts"),
+});
+
 // Body weights
 export const bodyWeightListQuery = paginationQuery.extend({
   userId: z.coerce.number().int().positive().optional(),
