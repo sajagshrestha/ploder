@@ -5,6 +5,7 @@ import { DetailPageSkeleton } from "@/components/app/loading-skeletons";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { NoData } from "@/components/ui/no-data";
 import { useMe, useMyWorkout } from "@/lib/my-queries";
 import {
   csvCell,
@@ -306,9 +307,10 @@ function WorkoutDetailPage() {
           );
         })}
         {!data.exercises.length && (
-          <p className="rounded-2xl border border-dashed p-8 text-center text-sm text-muted-foreground">
-            No exercises were added to this session.
-          </p>
+          <NoData
+            title="No exercises in this session"
+            description="This workout has no exercises or logged sets to display."
+          />
         )}
       </section>
     </div>

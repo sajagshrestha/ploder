@@ -21,6 +21,7 @@ import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { NoData } from "@/components/ui/no-data";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { SearchBar } from "@/components/ui/search-bar";
 import {
@@ -483,18 +484,19 @@ function HistoryPage() {
         ) : history.isPending ? (
           <ListSkeleton count={3} media />
         ) : !invalidRange && workouts.length === 0 ? (
-          <div className="space-y-3 rounded-2xl border border-dashed px-6 py-12 text-center">
-            <History className="mx-auto size-8 text-muted-foreground" />
-            <h3 className="font-semibold">
-              {hasFilters
+          <NoData
+            icon={History}
+            title={
+              hasFilters
                 ? "No workouts match these filters"
-                : "Your next workout starts your story"}
-            </h3>
-            <p className="text-sm text-muted-foreground">
-              {hasFilters
+                : "Your next workout starts your story"
+            }
+            description={
+              hasFilters
                 ? "Try a wider date range or a different workout name."
-                : "Your logged sessions will appear here, ready to revisit."}
-            </p>
+                : "Your logged sessions will appear here, ready to revisit."
+            }
+          >
             {hasFilters ? (
               <Button variant="outline" onClick={clearFilters}>
                 Clear filters
@@ -504,7 +506,7 @@ function HistoryPage() {
                 <Link to="/app/train">Start a workout</Link>
               </Button>
             )}
-          </div>
+          </NoData>
         ) : (
           !invalidRange &&
           workouts.map((workout) => {

@@ -542,7 +542,14 @@ fieldset.weighin-chips, .weighin-fieldset { border: 0; margin-inline: 0; padding
   }
 }.weight-history-list { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 12px; }.weight-history-entry { display: flex; align-items: center; gap: 8px; border: 1px solid var(--border); border-radius: 10px; padding: 13px; }.weight-history-entry > div { flex: 1; }.weight-history-entry strong { font-size: 12px; }.weight-history-entry small { display: block; color: var(--muted-foreground); font-size: 10px; margin-top: 4px; }
 .library-grid { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 16px; }.library-grid [data-slot="card-content"] { flex-wrap: wrap; }.library-grid [data-slot="card"] { overflow: hidden; }
-.app-exercise-library .library-grid { grid-template-columns: minmax(0, 1fr); }
+.app-exercise-library .library-grid { grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); }
+.exercise-library-card { min-width: 0; transition: border-color .15s ease, transform .15s ease; }
+.exercise-library-card:hover { border-color: color-mix(in oklab, var(--foreground) 28%, var(--border)); transform: translateY(-2px); }
+.exercise-library-image { display: flex; width: 100%; aspect-ratio: 4 / 3; align-items: center; justify-content: center; overflow: hidden; background: #f5f7fa; }
+.exercise-library-image img { width: 100%; height: 100%; object-fit: contain; transition: transform .2s ease; }
+.exercise-library-card:hover .exercise-library-image img { transform: scale(1.035); }
+.exercise-library-copy { display: flex; min-height: 148px; flex-direction: column; gap: 10px; padding: 14px; }
+.infinite-scroll-status { min-height: 44px; display: flex; align-items: center; justify-content: center; gap: 7px; color: var(--muted-foreground); font-size: 12px; text-align: center; }
 .training-content { max-width: 850px; margin-inline: auto; }.training-content > [data-slot="card"] { margin-block: 20px; }.training-content [data-slot="card-title"] { font-size: 17px; }
 /* Session flow: minimal top bar, then maximum-space exercise deck. */
 .session-page { display: grid; gap: 14px; align-content: start; }
@@ -793,25 +800,35 @@ fieldset.weighin-chips, .weighin-fieldset { border: 0; margin-inline: 0; padding
 .manager-exercise-copy strong { color: var(--foreground); }
 .exercise-picker-dialog { display: flex; flex-direction: column; gap: 14px; max-height: min(88dvh, 780px); overflow: hidden; }
 .exercise-picker-dialog > button[aria-label="Close"] { display: none; }
-.exercise-picker-dialog > :not(.exercise-picker-results) { flex-shrink: 0; }
-.exercise-picker-results { flex: 1 1 0; min-height: 80px; overflow-y: auto; overscroll-behavior: contain; display: flex; flex-direction: column; gap: 6px; padding: 2px; }
-.exercise-picker-option { display: flex; align-items: center; gap: 10px; padding: 10px; border: 1px solid var(--border); border-radius: 10px; cursor: pointer; }
+.exercise-picker-dialog > * { flex-shrink: 0; }
+.exercise-picker-library { display: flex; min-height: 0; flex: 1 1 0; flex-direction: column; gap: 14px; overflow: hidden; }
+.exercise-picker-results { flex: 1 1 0; min-height: 80px; overflow: hidden; overscroll-behavior: contain; }
+.exercise-picker-results-content { display: flex; flex-direction: column; gap: 12px; padding: 4px 10px 8px 2px; }
+.exercise-picker-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.exercise-picker-option { position: relative; display: flex; min-width: 0; flex-direction: column; align-items: stretch; gap: 8px; padding: 8px; border: 1px solid var(--border); border-radius: 12px; cursor: pointer; overflow: hidden; }
 .exercise-picker-option[data-selected="true"] { background: var(--accent); border-color: var(--ring); }
 .exercise-picker-option:focus-within { outline: 2px solid var(--ring); outline-offset: -2px; }
 .exercise-picker-copy { display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 0; }
-.exercise-picker-copy strong { font-size: 13px; line-height: 1.4; overflow-wrap: anywhere; }
+.exercise-picker-copy strong { font-size: 13px; line-height: 1.35; overflow-wrap: anywhere; }
 .exercise-picker-copy > span { font-size: 11px; line-height: 1.4; color: var(--muted-foreground); text-transform: capitalize; }
-.exercise-picker-option input { width: 20px; height: 20px; flex-shrink: 0; accent-color: var(--primary); }
-.exercise-selection-summary { display: flex; flex-wrap: wrap; gap: 6px; max-height: 90px; overflow-y: auto; }
-.exercise-selection-summary button { display: inline-flex; align-items: center; gap: 6px; max-width: 100%; min-height: 36px; padding: 6px 9px; border-radius: 8px; background: var(--accent); color: var(--foreground); font-size: 11px; text-align: left; }
+.exercise-picker-check { position: absolute; z-index: 2; top: 14px; right: 14px; display: grid; width: 20px; height: 20px; place-items: center; border-radius: 999px; background: var(--primary); color: var(--primary-foreground); box-shadow: 0 2px 7px rgb(0 0 0 / .25); pointer-events: none; }
+.exercise-picker-check svg { width: 13px; height: 13px; stroke-width: 3; }
+.exercise-picker-media-trigger { display: block; width: 100%; border-radius: 8px; overflow: hidden; }
+.exercise-picker-select-target { display: flex; min-width: 0; flex-direction: column; gap: 8px; text-align: left; }
+.exercise-picker-image { display: flex; width: 100%; aspect-ratio: 4 / 3; align-items: center; justify-content: center; overflow: hidden; background: #f5f7fa; }
+.exercise-picker-image img { width: 100%; height: 100%; object-fit: contain; }
+.exercise-selection-summary { flex: 0 0 36px; height: 36px; }
+.exercise-selection-summary button { height: 26px; max-width: 180px; cursor: pointer; font-size: 10px; }
+.exercise-selection-summary button:hover { background: var(--accent); }
 .exercise-selection-summary svg { flex-shrink: 0; }
 .exercise-picker-pagination { display: flex; align-items: center; justify-content: space-between; font-size: 11px; color: var(--muted-foreground); }
 .exercise-picker-pagination button { display: grid; place-items: center; width: 44px; height: 44px; border: 1px solid var(--border); border-radius: 9px; }
 .exercise-picker-pagination button:disabled { opacity: .4; }
-.exercise-picker-footer { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding-top: 12px; border-top: 1px solid var(--border); }
+.exercise-picker-footer { display: flex; align-items: center; justify-content: flex-end; gap: 10px; padding-top: 16px; border-top: 1px solid var(--border); }
 .exercise-picker-footer > span { font-size: 12px; color: var(--muted-foreground); }
 .exercise-picker-footer button { min-height: 44px; }
-@media (max-width: 700px) { .exercise-picker-dialog { height: min(88dvh, 780px); padding: 0 18px 18px; gap: 10px; } .exercise-picker-footer { flex-wrap: wrap; } .exercise-picker-footer button { flex: 1; } .exercise-selection-summary button { min-height: 44px; } }
+.exercise-picker-footer button { width: 100%; }
+@media (max-width: 700px) { .exercise-picker-dialog { height: min(88dvh, 780px); padding: 0 18px 18px; gap: 10px; } .exercise-picker-footer { flex-wrap: wrap; } .exercise-picker-footer button { flex: 1; } .app-exercise-library .library-grid { grid-template-columns: minmax(0, 1fr); } .exercise-library-image { aspect-ratio: 16 / 9; } }
 
 /* Visual appearance picker, shared by desktop and the mobile menu. */
 .appearance-trigger { min-height: 44px; gap: 8px; }

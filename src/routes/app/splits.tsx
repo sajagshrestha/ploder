@@ -6,6 +6,7 @@ import { ListSkeleton } from "@/components/app/loading-skeletons";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { NoData } from "@/components/ui/no-data";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -146,16 +147,19 @@ function SplitsPage() {
             </Card>
           ))}
           {mine.data?.data.length === 0 && (
-            <div className="rounded-xl border border-dashed p-6 text-center text-sm text-muted-foreground">
-              No plans yet.
+            <NoData
+              icon={CalendarDays}
+              title="Find your training plan"
+              description="Pick a template to organize your workouts and get started."
+            >
               <Button
-                className="mt-3 w-full"
+                className="min-h-11"
                 variant="outline"
                 onClick={() => setTab("templates")}
               >
-                Browse
+                Browse templates
               </Button>
-            </div>
+            </NoData>
           )}
         </div>
       )}

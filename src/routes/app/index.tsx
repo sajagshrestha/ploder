@@ -19,6 +19,7 @@ import {
   PanelSkeleton,
 } from "@/components/app/loading-skeletons";
 import { Button } from "@/components/ui/button";
+import { NoData } from "@/components/ui/no-data";
 import { Skeleton } from "@/components/ui/skeleton";
 import { dateKey, groupActivity } from "@/lib/activity";
 import {
@@ -355,16 +356,18 @@ function TodayPage() {
               </Link>
             </>
           ) : (
-            <div className="plan-empty">
-              <CalendarDays size={28} />
-              <h3>No plan yet.</h3>
-              <p>Pick a template to start.</p>
+            <NoData
+              compact
+              icon={CalendarDays}
+              title="Choose your training plan"
+              description="Browse templates to find a routine that fits your goals."
+            >
               <Button asChild>
                 <Link to="/app/splits">
                   Browse plans <ArrowRight size={16} />
                 </Link>
               </Button>
-            </div>
+            </NoData>
           )}
         </section>
       </div>

@@ -36,15 +36,17 @@ import {
   ExerciseCardSkeleton,
   ListSkeleton,
 } from "@/components/app/loading-skeletons";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { InfiniteScrollTrigger } from "@/components/ui/infinite-scroll-trigger";
 import { Input } from "@/components/ui/input";
+import { NoData } from "@/components/ui/no-data";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogHeader,
   DialogTitle,
 } from "@/components/ui/responsive-dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -55,9 +57,9 @@ import {
   useAddWorkoutExercises,
   useCompleteWorkout,
   useDeleteSet,
+  useInfiniteMyExercises,
   useLogSet,
   useMe,
-  useMyExercises,
   useMySplit,
   useMySummary,
   useMyWorkout,
@@ -117,16 +119,17 @@ function StartWorkout() {
       </div>
 
       {activeSplitId === null ? (
-        <div className="plan-empty">
-          <Dumbbell size={28} />
-          <h3>No plan yet.</h3>
-          <p>Follow a template or jump into a freestyle session.</p>
+        <NoData
+          icon={Dumbbell}
+          title="Choose your training plan"
+          description="Follow a template, or start a freestyle session below."
+        >
           <Button asChild>
             <Link to="/app/splits">
               Browse plans <ArrowRight size={16} />
             </Link>
           </Button>
-        </div>
+        </NoData>
       ) : activeSplit.data ? (
         <Card className="gap-3 py-4">
           <CardHeader className="pb-1">
@@ -375,15 +378,16 @@ function ActiveWorkout({
 
         {detail &&
           (exercises.length === 0 && view === "cards" ? (
-            <div className="plan-empty">
-              <Dumbbell size={28} />
-              <h3>Add an exercise.</h3>
-              <p>Add one to start logging sets.</p>
+            <NoData
+              icon={Dumbbell}
+              title="Ready for your first exercise?"
+              description="Choose a movement from the library, then log your weight and reps as you go."
+            >
               <Button onClick={() => setAdding(true)}>
                 <Plus size={16} />
                 Add exercise
               </Button>
-            </div>
+            </NoData>
           ) : view === "cards" ? (
             <ExerciseDeck
               exercises={exercises}
@@ -769,7 +773,7 @@ function ExerciseDeck({
             )}
           </div>
         </div>
-        <AnimatePresence initial={false}>
+        <AnimatePresence initial={false} mode="popLayout">
           {exercise.sets.length === 0 ? (
             <ExerciseMedia
               key={`media-${exercise.id}`}
@@ -1016,18 +1020,17 @@ function AddExerciseDialog({
   onClose: () => void;
 }) {
   const [search, setSearch] = useState("");
-  const [page, setPage] = useState(1);
   const [selected, setSelected] = useState<Exercise[]>([]);
-  const library = useMyExercises({
+  const library = useInfiniteMyExercises({
     search: search || undefined,
-    page,
-    pageSize: 30,
+    pageSize: 20,
   });
+  const exercises = library.data?.pages.flatMap((page) => page.data) ?? [];
+  const total = library.data?.pages[0]?.total;
   const add = useAddWorkoutExercises();
   useEffect(() => {
     if (!open) {
       setSearch("");
-      setPage(1);
       setSelected([]);
     }
   }, [open]);
@@ -1051,7 +1054,6 @@ function AddExerciseDialog({
         toast.error(error instanceof Error ? error.message : "Couldn't add.");
     }
   };
-  const totalPages = Math.ceil((library.data?.total ?? 0) / 30);
   return (
     <Dialog
       open={open}
@@ -1060,115 +1062,129 @@ function AddExerciseDialog({
       }}
     >
       <DialogContent className="exercise-picker-dialog sm:max-w-lg">
-        <DialogHeader>
-          <DialogTitle>Add exercises</DialogTitle>
-          <DialogDescription>Pick, then add.</DialogDescription>
-        </DialogHeader>
-        <SearchBar
-          aria-label="Search exercises to add"
-          placeholder="Search exercises…"
-          value={search}
-          disabled={add.isPending}
-          onValueChange={(value) => {
-            setSearch(value);
-            setPage(1);
-          }}
-        />
-        {selected.length > 0 && (
-          <section
-            className="exercise-selection-summary"
-            aria-label="Selected exercises"
+        <DialogTitle className="sr-only">Add exercises</DialogTitle>
+        <DialogDescription className="sr-only">
+          Browse exercises and add them to your workout.
+        </DialogDescription>
+        <div className="exercise-picker-library">
+          <SearchBar
+            aria-label="Search exercises to add"
+            placeholder="Search exercises…"
+            value={search}
+            disabled={add.isPending}
+            onValueChange={setSearch}
+          />
+          {selected.length > 0 && (
+            <ScrollArea
+              className="exercise-selection-summary"
+              orientation="horizontal"
+              type="always"
+              role="region"
+              aria-label="Selected exercises"
+            >
+              <div className="flex w-max gap-1.5 pb-2">
+                {selected.map((exercise) => (
+                  <Badge key={exercise.id} variant="secondary" asChild>
+                    <button
+                      type="button"
+                      disabled={add.isPending}
+                      onClick={() => toggle(exercise)}
+                      aria-label={`Deselect ${exercise.name}`}
+                    >
+                      {exercise.name}
+                      <X aria-hidden="true" />
+                    </button>
+                  </Badge>
+                ))}
+              </div>
+            </ScrollArea>
+          )}
+          <ScrollArea
+            className="exercise-picker-results"
+            role="region"
+            aria-label="Exercise library"
+            type="always"
           >
-            {selected.map((exercise) => (
-              <button
-                type="button"
-                key={exercise.id}
-                disabled={add.isPending}
-                onClick={() => toggle(exercise)}
-                aria-label={`Deselect ${exercise.name}`}
-              >
-                {exercise.name}
-                <X size={13} aria-hidden="true" />
-              </button>
-            ))}
-          </section>
-        )}
-        <section
-          className="exercise-picker-results"
-          aria-label="Exercise library"
-        >
-          {library.isPending && <ListSkeleton count={5} media />}
-          {library.isError && (
-            <div className="inline-error">
-              Couldn't load.{" "}
-              <button type="button" onClick={() => library.refetch()}>
-                Retry
-              </button>
+            <div className="exercise-picker-results-content">
+              {library.isPending && <ListSkeleton count={5} media />}
+              {library.isError && (
+                <div className="inline-error">
+                  Couldn't load.{" "}
+                  <button type="button" onClick={() => library.refetch()}>
+                    Retry
+                  </button>
+                </div>
+              )}
+              <div className="exercise-picker-grid">
+                {exercises.map((exercise) => {
+                  const checked = selected.some(
+                    (item) => item.id === exercise.id,
+                  );
+                  return (
+                    <article
+                      key={exercise.id}
+                      className="exercise-picker-option"
+                      data-selected={checked}
+                    >
+                      <button
+                        type="button"
+                        className="exercise-picker-select-target"
+                        aria-label={`${checked ? "Deselect" : "Select"} ${exercise.name}`}
+                        disabled={
+                          add.isPending || (!checked && selected.length >= 50)
+                        }
+                        onClick={() => toggle(exercise)}
+                      >
+                        <span className="exercise-picker-image">
+                          <img
+                            src={exercise.gifUrl ?? exercise.imageUrl ?? ""}
+                            alt=""
+                            loading="lazy"
+                          />
+                        </span>
+                        <span className="exercise-picker-copy">
+                          <strong>{exercise.name}</strong>
+                          <span>
+                            {exercise.muscleGroup} · {exercise.equipment}
+                          </span>
+                        </span>
+                      </button>
+                      <AnimatePresence initial={false}>
+                        {checked && (
+                          <motion.span
+                            className="exercise-picker-check"
+                            initial={{ scale: 0.35, rotate: -35 }}
+                            animate={{ scale: 1, rotate: 0 }}
+                            exit={{ scale: 0.35, rotate: 35 }}
+                            transition={{
+                              type: "spring",
+                              stiffness: 520,
+                              damping: 28,
+                            }}
+                            aria-hidden="true"
+                          >
+                            <Check />
+                          </motion.span>
+                        )}
+                      </AnimatePresence>
+                    </article>
+                  );
+                })}
+              </div>
+              {exercises.length === 0 && !library.isPending && (
+                <p className="inline-empty">No matches.</p>
+              )}
+              <InfiniteScrollTrigger
+                hasMore={library.hasNextPage}
+                isLoading={library.isFetchingNextPage}
+                onLoadMore={library.fetchNextPage}
+                loadedCount={exercises.length}
+                totalCount={total}
+              />
             </div>
-          )}
-          {library.data?.data.map((exercise) => {
-            const checked = selected.some((item) => item.id === exercise.id);
-            return (
-              <label
-                key={exercise.id}
-                className="exercise-picker-option"
-                data-selected={checked}
-              >
-                <ExerciseThumbnail
-                  src={exercise.imageUrl ?? exercise.gifUrl}
-                  exerciseId={exercise.id}
-                  name={exercise.name}
-                />
-                <span className="exercise-picker-copy">
-                  <strong>{exercise.name}</strong>
-                  <span>
-                    {exercise.muscleGroup} · {exercise.equipment}
-                  </span>
-                </span>
-                <input
-                  type="checkbox"
-                  checked={checked}
-                  aria-label={exercise.name}
-                  disabled={
-                    add.isPending || (!checked && selected.length >= 50)
-                  }
-                  onChange={() => toggle(exercise)}
-                />
-              </label>
-            );
-          })}
-          {library.data?.data.length === 0 && (
-            <p className="inline-empty">No matches.</p>
-          )}
-        </section>
-        {totalPages > 1 && (
-          <div className="exercise-picker-pagination">
-            <button
-              type="button"
-              aria-label="Previous page of exercises"
-              disabled={page === 1 || add.isPending}
-              onClick={() => setPage(page - 1)}
-            >
-              <ChevronLeft size={18} />
-            </button>
-            <span>
-              Page {page} of {totalPages}
-            </span>
-            <button
-              type="button"
-              aria-label="Next page of exercises"
-              disabled={page >= totalPages || add.isPending}
-              onClick={() => setPage(page + 1)}
-            >
-              <ChevronRight size={18} />
-            </button>
-          </div>
-        )}
+          </ScrollArea>
+        </div>
         <div className="exercise-picker-footer">
-          <span role="status">
-            {selected.length} selected
-            {selected.length === 50 ? " · limit reached" : ""}
-          </span>
           <Button
             disabled={!selected.length || add.isPending}
             onClick={() => void submit()}

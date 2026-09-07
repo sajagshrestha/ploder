@@ -118,7 +118,7 @@ function ManagerList({
           <h2>
             Exercises <span>{rows.length}</span>
           </h2>
-          <p id="reorder-help">Drag to reorder.</p>
+          {rows.length > 0 && <p id="reorder-help">Drag to reorder.</p>}
         </div>
         <Button onClick={onAdd} disabled={busy}>
           <Plus size={16} /> Add exercise
@@ -158,7 +158,15 @@ function ManagerList({
         ))}
       </ol>
       {rows.length === 0 && (
-        <p className="inline-empty">Add exercise to start.</p>
+        <NoData
+          title="Build your workout"
+          description="Add your first exercise, then arrange your workout in the order you want to train."
+        >
+          <Button onClick={onAdd} disabled={busy}>
+            <Plus size={16} />
+            Add exercise
+          </Button>
+        </NoData>
       )}
       <ExerciseDragPreview />
       <ConfirmDialog
@@ -392,3 +400,5 @@ function ExerciseDragPreview() {
     document.body,
   );
 }
+
+import { NoData } from "@/components/ui/no-data";

@@ -126,7 +126,6 @@ function SignedInLayout() {
     param: "menu",
   });
   const menuOpen = menuValue !== null;
-  const closeMenu = () => setMenuValue(null);
   const summary = useMySummary();
   const matches = useMatches();
   const path = matches.at(-1)?.pathname ?? "/app";
@@ -252,7 +251,7 @@ function SignedInLayout() {
         </nav>
         <DrawerContent side="right" className="mobile-drawer">
           <DrawerHeader className="drawer-brand">
-            <Link to="/app" className="app-brand" onClick={closeMenu}>
+            <Link to="/app" className="app-brand">
               <span className="brand-mark">
                 <Dumbbell size={22} />
               </span>
@@ -261,13 +260,13 @@ function SignedInLayout() {
             <DrawerTitle className="sr-only">Menu</DrawerTitle>
           </DrawerHeader>
           <div className="drawer-actions">
-            <Button asChild onClick={closeMenu}>
+            <Button asChild>
               <Link to="/app/train">
                 <Play size={15} />
                 {activeWorkout ? "Resume workout" : "Start workout"}
               </Link>
             </Button>
-            <Button asChild variant="outline" onClick={closeMenu}>
+            <Button asChild variant="outline">
               <Link to="/app/weight">
                 <Scale size={15} />
                 Weigh in
@@ -282,7 +281,6 @@ function SignedInLayout() {
                 to={tab.to}
                 activeOptions={{ exact: tab.exact }}
                 className="desktop-nav-link"
-                onClick={closeMenu}
               >
                 <tab.icon size={19} />
                 <span>{tab.label}</span>

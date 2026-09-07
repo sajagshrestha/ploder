@@ -1,5 +1,6 @@
 import {
   type QueryClient,
+  useInfiniteQuery,
   useMutation,
   useQuery,
   useQueryClient,
@@ -190,6 +191,34 @@ export function useMyExercises(params: {
     queryKey: ["my", "exercises", params],
     queryFn: () =>
       apiFetch<Paginated<Exercise>>(`/api/my/exercises?${query.toString()}`),
+  });
+}
+
+export function useInfiniteMyExercises(params: {
+  pageSize?: number;
+  search?: string;
+  muscleGroup?: string;
+  equipment?: string;
+}) {
+  return useInfiniteQuery({
+    queryKey: ["my", "exercises", "infinite", params],
+    initialPageParam: 1,
+    queryFn: ({ pageParam }) => {
+      const query = new URLSearchParams({
+        page: String(pageParam),
+        pageSize: String(params.pageSize ?? 30),
+      });
+      if (params.search) query.set("search", params.search);
+      if (params.muscleGroup) query.set("muscleGroup", params.muscleGroup);
+      if (params.equipment) query.set("equipment", params.equipment);
+      return apiFetch<Paginated<Exercise>>(
+        `/api/my/exercises?${query.toString()}`,
+      );
+    },
+    getNextPageParam: (lastPage) =>
+      lastPage.page * lastPage.pageSize < lastPage.total
+        ? lastPage.page + 1
+        : undefined,
   });
 }
 

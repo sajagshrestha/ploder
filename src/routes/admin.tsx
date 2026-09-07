@@ -141,7 +141,6 @@ function SignedInAdminLayout() {
     param: "menu",
   });
   const menuOpen = menuValue !== null;
-  const closeMenu = () => setMenuValue(null);
   const me = useMe(true);
   const matches = useMatches();
   const currentPath = matches.at(-1)?.pathname ?? "/admin";
@@ -295,7 +294,7 @@ function SignedInAdminLayout() {
         </nav>
         <DrawerContent side="right" className="mobile-drawer">
           <DrawerHeader className="drawer-brand">
-            <Link to="/admin" className="app-brand" onClick={closeMenu}>
+            <Link to="/admin" className="app-brand">
               <span className="brand-mark">
                 <Dumbbell size={22} />
               </span>
@@ -304,7 +303,7 @@ function SignedInAdminLayout() {
             <DrawerTitle className="sr-only">Menu</DrawerTitle>
           </DrawerHeader>
           <div className="drawer-actions">
-            <Button asChild onClick={closeMenu}>
+            <Button asChild>
               <Link to="/app">
                 <Zap size={15} />
                 Open tracker
@@ -319,7 +318,6 @@ function SignedInAdminLayout() {
                 to={tab.to}
                 activeOptions={{ exact: tab.exact }}
                 className="desktop-nav-link"
-                onClick={closeMenu}
               >
                 <tab.icon size={19} />
                 <span>{tab.label}</span>

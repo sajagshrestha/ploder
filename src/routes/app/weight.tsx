@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { NoData } from "@/components/ui/no-data";
 import {
   Dialog,
   DialogContent,
@@ -199,11 +200,12 @@ function WeightPage() {
               <p className="chart-data">Latest {weightRows.length}.</p>
             </>
           ) : (
-            <div className="plan-empty">
-              <Scale size={28} />
-              <h3>No data.</h3>
-              <p>Log first weigh-in.</p>
-            </div>
+            <NoData
+              compact
+              icon={Scale}
+              title="Your progress starts here"
+              description="Log your first weigh-in using the form to start tracking your trend."
+            />
           )}
         </section>
         <section className="dashboard-panel">

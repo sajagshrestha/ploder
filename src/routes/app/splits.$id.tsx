@@ -1,11 +1,11 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { ArrowLeft, Check, Copy, Play } from "lucide-react";
 import { toast } from "sonner";
-
 import { SplitDetailSkeleton } from "@/components/app/loading-skeletons";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { NoData } from "@/components/ui/no-data";
 import {
   useCloneTemplate,
   useMySplit,
@@ -168,15 +168,20 @@ function SplitDetailPage() {
                 </div>
               ))}
               {day.exercises.length === 0 && (
-                <p className="text-sm text-muted-foreground">Empty.</p>
+                <NoData
+                  compact
+                  title="No exercises yet"
+                  description="Exercises added to this day will appear here."
+                />
               )}
             </CardContent>
           </Card>
         ))}
         {split.days.length === 0 && (
-          <p className="rounded-xl border border-dashed p-6 text-center text-sm text-muted-foreground">
-            No days yet.
-          </p>
+          <NoData
+            title="No training days yet"
+            description="Training days will appear here once they are added to this plan."
+          />
         )}
       </div>
     </div>

@@ -31,11 +31,13 @@ export function ExerciseThumbnail({
   exerciseId,
   name = "exercise",
   className = "exercise-thumbnail",
+  triggerClassName,
 }: {
   src?: string | null;
   exerciseId?: number;
   name?: string;
   className?: string;
+  triggerClassName?: string;
 }) {
   const [failed, setFailed] = useState<string | null>(null);
   const [previewValue, setPreviewValue] = useOverlayState("preview");
@@ -65,7 +67,7 @@ export function ExerciseThumbnail({
   const trigger = (
     <button
       type="button"
-      className="shrink-0 rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      className={`shrink-0 rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-ring ${triggerClassName ?? ""}`}
       aria-label={`View ${name} details`}
       onClick={(event) => event.stopPropagation()}
     >
