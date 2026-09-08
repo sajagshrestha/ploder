@@ -832,7 +832,7 @@ fieldset.weighin-chips, .weighin-fieldset { border: 0; margin-inline: 0; padding
 .exercise-picker-footer > span { font-size: 12px; color: var(--muted-foreground); }
 .exercise-picker-footer [data-slot="search-bar"] { flex: 1 1 0; min-width: 0; }
 .exercise-picker-footer button { min-height: 44px; flex-shrink: 0; }
-@media (max-width: 700px) { [data-slot="drawer-content"].exercise-picker-dialog { height: 100dvh; max-height: 100dvh; min-height: 100dvh; margin-top: 0; border-radius: 0; border-right: 0; border-bottom: 0; border-left: 0; padding: 0 18px max(18px, env(safe-area-inset-bottom)); gap: 10px; } .exercise-picker-results { width: calc(100% + 36px); margin-inline: -18px; } .exercise-picker-results-content { padding-inline: 18px 28px; } .exercise-picker-footer { flex-wrap: nowrap; } .app-exercise-library .library-grid { grid-template-columns: minmax(0, 1fr); } .exercise-library-image { aspect-ratio: 16 / 9; } }
+@media (max-width: 700px) { [data-slot="drawer-content"].exercise-picker-dialog { top: 0; height: 100dvh; max-height: 100dvh; min-height: 100dvh; margin-top: 0; border-radius: 0; border-right: 0; border-bottom: 0; border-left: 0; padding: 0 18px max(18px, env(safe-area-inset-bottom)); gap: 10px; } .exercise-picker-results { width: calc(100% + 36px); margin-inline: -18px; } .exercise-picker-results-content { padding-inline: 18px 28px; } .exercise-picker-footer { flex-wrap: nowrap; } .app-exercise-library .library-grid { grid-template-columns: minmax(0, 1fr); } .exercise-library-image { aspect-ratio: 16 / 9; } }
 
 /* Visual appearance picker, shared by desktop and the mobile menu. */
 .appearance-trigger { min-height: 44px; gap: 8px; }

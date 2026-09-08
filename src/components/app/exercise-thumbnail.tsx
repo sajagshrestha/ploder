@@ -125,7 +125,9 @@ function ExerciseDetails({
     <>
       <Header>
         <Title>{exercise?.name ?? name}</Title>
-        <Description>Exercise demonstration and technique</Description>
+        <Description className="sr-only">
+          Exercise demonstration and technique
+        </Description>
       </Header>
       <ScrollArea
         className={mobile ? "min-h-0 flex-1 px-4" : "max-h-[70dvh] pr-3"}
@@ -196,15 +198,10 @@ function ExerciseDetails({
               )}
               <div className="space-y-2">
                 <h3 className="font-semibold">How to perform</h3>
-                <ScrollArea
-                  aria-label={`${exercise.name} instructions`}
-                  className="h-36 rounded-lg border bg-muted/20 sm:h-40"
-                >
-                  <p className="whitespace-pre-line p-3 pr-5 text-sm leading-relaxed text-muted-foreground">
-                    {exercise.instructionsEn ||
-                      "Instructions haven’t been added for this exercise yet."}
-                  </p>
-                </ScrollArea>
+                <p className="whitespace-pre-line rounded-lg border bg-muted/20 p-3 text-sm leading-relaxed text-muted-foreground">
+                  {exercise.instructionsEn ||
+                    "Instructions haven’t been added for this exercise yet."}
+                </p>
               </div>
             </>
           )}

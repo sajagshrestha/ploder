@@ -54,6 +54,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { SearchBar } from "@/components/ui/search-bar";
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import { useOverlayState } from "@/hooks/use-overlay-state";
+import { usePinDrawerToVisualViewport } from "@/hooks/use-pin-drawer-to-visual-viewport";
 import {
   type MyWorkoutExercise,
   useAddWorkoutExercises,
@@ -1024,6 +1025,12 @@ function AddExerciseDialog({
   const [search, setSearch] = useState("");
   const [selected, setSelected] = useState<Exercise[]>([]);
   const debouncedSearch = useDebouncedValue(search);
+  // Keep the full-screen drawer pinned while the keyboard is open so the
+  // keyboard overlays its bottom instead of shoving the top out of view.
+  usePinDrawerToVisualViewport(
+    open,
+    '[data-slot="drawer-content"].exercise-picker-dialog',
+  );
   const library = useInfiniteMyExercises({
     search: debouncedSearch || undefined,
     pageSize: 20,
