@@ -4,6 +4,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 import { ListSkeleton } from "@/components/app/loading-skeletons";
+import { Panel, PanelHeading } from "@/components/app/panel";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -13,6 +14,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { Eyebrow } from "@/components/ui/eyebrow";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { SearchBar } from "@/components/ui/search-bar";
@@ -111,24 +113,30 @@ function AdminSplits() {
   };
 
   return (
-    <div className="overview-page">
-      <div className="page-heading">
+    <div className="grid gap-6 max-mobile:gap-[18px]">
+      <div className="mb-[5px] flex items-center justify-between gap-5">
         <div>
-          <p className="eyebrow">TRAINING PLANS</p>
-          <h1>
-            Plans members follow<span className="heading-dot">.</span>
+          <Eyebrow>TRAINING PLANS</Eyebrow>
+          <h1 className="text-[clamp(24px,2.35vw,34px)] leading-[1.3] font-bold tracking-[-1.25px] max-mobile:text-[28px] max-mobile:tracking-[-1.1px]">
+            Plans members follow<span className="text-chart-1">.</span>
           </h1>
-          <p>Users clone these templates into their own training splits.</p>
+          <p className="mt-[9px] text-[13px] text-muted-foreground max-mobile:text-[11px]">
+            Users clone these templates into their own training splits.
+          </p>
         </div>
       </div>
 
-      <section className="dashboard-panel">
-        <div className="panel-heading">
+      <Panel>
+        <PanelHeading>
           <div>
-            <p className="eyebrow">NEW TEMPLATE</p>
-            <h2>Add split template</h2>
+            <Eyebrow className="mb-[7px] text-[8px] tracking-[1.25px]">
+              NEW TEMPLATE
+            </Eyebrow>
+            <h2 className="text-[15px] font-bold tracking-[-0.35px]">
+              Add split template
+            </h2>
           </div>
-        </div>
+        </PanelHeading>
         <Card style={{ border: 0, boxShadow: "none", padding: 0 }}>
           <CardHeader>
             <CardDescription>
@@ -189,7 +197,7 @@ function AdminSplits() {
             </form>
           </CardContent>
         </Card>
-      </section>
+      </Panel>
 
       {splits.isPending ? (
         <ListSkeleton count={3} tall />

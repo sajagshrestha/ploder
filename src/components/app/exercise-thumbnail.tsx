@@ -30,7 +30,7 @@ export function ExerciseThumbnail({
   src,
   exerciseId,
   name = "exercise",
-  className = "exercise-thumbnail",
+  className = "grid size-[42px] shrink-0 place-items-center overflow-hidden rounded-lg bg-muted text-muted-foreground [&_img]:h-full [&_img]:w-full [&_img]:object-contain",
   triggerClassName,
 }: {
   src?: string | null;

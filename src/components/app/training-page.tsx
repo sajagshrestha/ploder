@@ -42,6 +42,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { InfiniteScrollTrigger } from "@/components/ui/infinite-scroll-trigger";
+import { InlineNote } from "@/components/ui/inline-note";
 import { Input } from "@/components/ui/input";
 import { NoData } from "@/components/ui/no-data";
 import {
@@ -165,12 +166,16 @@ function StartWorkout() {
       ) : activeSplit.isPending ? (
         <ListSkeleton count={3} tall />
       ) : (
-        <div className="inline-error">
+        <InlineNote>
           Couldn't load plan.{" "}
-          <button type="button" onClick={() => activeSplit.refetch()}>
+          <button
+            type="button"
+            className="underline underline-offset-[3px]"
+            onClick={() => activeSplit.refetch()}
+          >
             Retry
           </button>
-        </div>
+        </InlineNote>
       )}
 
       <Card className="gap-3 py-4">
@@ -209,7 +214,10 @@ function StartWorkout() {
       </Card>
 
       <div className="flex justify-center">
-        <Link to="/app/history" className="text-link">
+        <Link
+          to="/app/history"
+          className="inline-flex items-center gap-[9px] text-[12px] font-bold hover:underline hover:underline-offset-4"
+        >
           View history <ArrowRight size={15} />
         </Link>
       </div>
@@ -322,20 +330,24 @@ function ActiveWorkout({
           </Button>
         )}
         {!manage && (
-          <div className="session-top">
-            <span className="session-type-badge" title={detail?.name}>
+          <div className="flex min-h-12 items-start gap-[10px] max-mobile:flex-wrap max-mobile:shrink-0">
+            <span
+              className="min-w-0 text-[20px] font-bold tracking-[-0.5px] text-balance text-foreground max-mobile:max-w-[calc(100%-95px)]"
+              title={detail?.name}
+            >
               {dayName}
             </span>
-            <span className="session-live">
+            <span className="inline-flex min-w-0 items-center gap-[7px] self-start overflow-hidden text-[20px] font-bold tracking-[-0.5px] whitespace-nowrap text-muted-foreground text-ellipsis">
               {totalSets} {totalSets === 1 ? "set" : "sets"}
             </span>
-            <div className="session-top-actions">
+            <div className="ml-auto flex shrink-0 items-center gap-2">
               {detail && (exercises.length > 0 || view === "list") && (
                 <Link
                   to={manage ? "/app/train" : "/app/train/exercises"}
                   className={cn(
-                    "session-icon-btn session-icon-btn-manage",
-                    view === "list" && "session-icon-btn-manage-active",
+                    "grid h-[46px] w-[46px] place-items-center rounded-[14px] border bg-transparent transition-[transform,background,opacity] duration-150 active:scale-[0.92] disabled:opacity-35 max-mobile:h-[38px] max-mobile:min-h-[38px] max-mobile:w-[38px] border-border bg-accent text-accent-foreground hover:border-ring",
+                    view === "list" &&
+                      "border-transparent bg-primary text-primary-foreground hover:border-transparent",
                   )}
                   aria-label={
                     view === "list" ? "Back to workout" : "Manage exercises"
@@ -346,7 +358,7 @@ function ActiveWorkout({
               )}
               <button
                 type="button"
-                className="session-icon-btn session-icon-btn-solid"
+                className="inline-flex h-[46px] w-auto items-center justify-center gap-[7px] rounded-[10px] border border-transparent bg-primary px-[14px] py-0 text-[12px] font-bold text-primary-foreground transition-[transform,background,opacity] duration-150 hover:brightness-[0.96] active:scale-[0.92] disabled:opacity-35 max-mobile:h-[38px] max-mobile:min-h-[38px] max-mobile:w-auto"
                 aria-label="Finish workout"
                 disabled={complete.isPending || !detail}
                 onClick={() =>
@@ -371,12 +383,16 @@ function ActiveWorkout({
         )}
         {workout.isPending && <ExerciseCardSkeleton header={false} />}
         {workout.isError && (
-          <div className="inline-error">
+          <InlineNote>
             Couldn't load.{" "}
-            <button type="button" onClick={() => workout.refetch()}>
+            <button
+              type="button"
+              className="underline underline-offset-[3px]"
+              onClick={() => workout.refetch()}
+            >
               Retry
             </button>
-          </div>
+          </InlineNote>
         )}
 
         {detail &&
@@ -423,10 +439,10 @@ function ActiveWorkout({
           ))}
 
         {detail && view === "cards" && exercises.length > 0 && (
-          <div className="session-picker-bar session-picker-bar-bottom">
-            <div className="exercise-minimap">
+          <div className="session-picker-bar session-picker-bar-bottom max-mobile:shrink-0">
+            <div className="exercise-minimap relative flex h-11 min-w-0 max-w-[180px] flex-1 items-center justify-center gap-1 rounded-lg has-[input:focus-visible]:outline-2 has-[input:focus-visible]:outline-solid has-[input:focus-visible]:outline-ring has-[input:focus-visible]:outline-offset-[3px]">
               <input
-                className="exercise-minimap-slider"
+                className="exercise-minimap-slider absolute inset-0 z-[1] m-0 h-full w-full cursor-pointer touch-pan-y opacity-0 disabled:cursor-default"
                 type="range"
                 min={0}
                 max={exercises.length - 1}
@@ -443,6 +459,7 @@ function ActiveWorkout({
               {exercises.map((exercise, index) => (
                 <span
                   key={exercise.id}
+                  className="h-[5px] min-w-[1px] flex-1 rounded-full bg-border transition-[background,height] duration-200 data-[active=true]:h-[9px] data-[active=true]:bg-primary data-[logged=true]:bg-muted-foreground"
                   aria-hidden="true"
                   data-active={
                     index === Math.min(deck[0], exercises.length - 1)
@@ -513,7 +530,7 @@ function CoverflowCard({
   );
   return (
     <motion.div
-      className="ex-card ex-card-deck coverflow-card"
+      className="relative flex min-h-0 min-w-0 flex-[1_1_0] touch-pan-y flex-col gap-5 overflow-hidden rounded-[17px] border border-border bg-card p-6 text-left text-foreground select-none focus-visible:outline-[3px] focus-visible:outline-solid focus-visible:outline-ring focus-visible:outline-offset-4 mobile:basis-[46%] max-mobile:gap-[14px] max-mobile:p-4 [scroll-snap-align:unset] [&_input]:touch-pan-y [&_input]:select-text coverflow-card"
       style={{ x, rotateY, z, zIndex, visibility, opacity }}
       inert={index !== active}
       aria-hidden={index !== active}
@@ -644,7 +661,7 @@ function ExerciseMedia({
 }) {
   return (
     <motion.div
-      className="ex-card-media"
+      className="flex max-h-[250px] min-h-[160px] flex-[1_1_160px] justify-center overflow-hidden rounded-xl bg-muted max-mobile:basis-0 max-mobile:max-h-none [&_img]:pointer-events-none [&_img]:h-full [&_img]:min-h-0 [&_img]:w-full [&_img]:object-contain [&_img]:select-none"
       layout
       initial={{ opacity: 0, scale: 0.98 }}
       animate={{ opacity: 1, scale: 1 }}
@@ -763,13 +780,13 @@ function ExerciseDeck({
 
     return (
       <>
-        <div className="ex-card-top">
-          <div className="ex-card-body">
-            <h2 className="ex-card-name">
+        <div className="flex items-start justify-between gap-2 max-mobile:shrink-0">
+          <div className="mt-0 flex min-w-0 flex-col gap-2">
+            <h2 className="text-[clamp(23px,4vw,29px)] font-bold tracking-[-1.2px] leading-[1.1] text-balance max-mobile:text-[24px] max-mobile:tracking-[-0.7px]">
               {exercise.exerciseName ?? "Exercise"}
             </h2>
             {lastSet && (
-              <p className="ex-card-last">
+              <p className="text-[12px] font-semibold text-muted-foreground">
                 Last set: {lastSet.weight} {unit} × {lastSet.reps}
                 {lastSet.isWarmup ? " · warmup" : ""}
               </p>
@@ -787,13 +804,16 @@ function ExerciseDeck({
           ) : null}
         </AnimatePresence>
         {exercise.sets.length > 0 && (
-          <ScrollArea type="always" className="ex-card-sets">
-            <div className="ex-card-set-list">
+          <ScrollArea
+            type="always"
+            className="mx-[-6px] min-h-0 flex-[1_1_0] [&_[data-slot=scroll-area-viewport]]:pl-1.5 [&_[data-slot=scroll-area-viewport]]:pr-3"
+          >
+            <div className="grid gap-[6px]">
               <AnimatePresence initial={false}>
                 {[...exercise.sets].reverse().map((set) => (
                   <motion.div
                     key={set.id}
-                    className="ex-set-row"
+                    className="flex items-center gap-[10px] rounded-xl border border-border bg-[color-mix(in_srgb,var(--card)_65%,transparent)] py-[10px] pr-2 pl-[14px]"
                     layout
                     initial={{ opacity: 0, y: -8 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -804,17 +824,18 @@ function ExerciseDeck({
                       damping: 34,
                     }}
                   >
-                    <span>
-                      <strong>
+                    <span className="min-w-0 flex-1">
+                      <strong className="block text-[14px] font-extrabold tracking-[-0.2px]">
                         {set.weight} {unit} × {set.reps}
                       </strong>
-                      <small>
+                      <small className="mt-[2px] block text-[10px] font-semibold text-muted-foreground">
                         Set {set.setNumber}
                         {set.isWarmup ? " · warmup" : ""}
                       </small>
                     </span>
                     <button
                       type="button"
+                      className="grid size-[34px] place-items-center rounded-[9px] text-muted-foreground hover:bg-[color-mix(in_srgb,var(--destructive)_8%,transparent)] hover:text-destructive"
                       aria-label={`Delete set ${set.setNumber}`}
                       disabled={deleteSet.isPending}
                       onClick={() =>
@@ -833,25 +854,28 @@ function ExerciseDeck({
           </ScrollArea>
         )}
 
-        <div className="ex-card-pad">
-          <div className="set-pad-row">
-            <fieldset className="set-pad-group weighin-fieldset">
-              <legend>Weight</legend>
-              <div className="weighin-stepper">
+        <div className="mt-[2px] grid gap-3 border-t border-border pt-4 max-mobile:mt-auto max-mobile:shrink-0">
+          <div className="grid grid-cols-2 gap-[10px] max-mobile:grid-cols-1">
+            <fieldset className="m-0 min-w-0 border-0 p-0">
+              <legend className="mb-[7px] p-0 text-[11px] font-medium">
+                Weight
+              </legend>
+              <div className="mt-0 flex items-stretch gap-[10px]">
                 <button
                   type="button"
-                  className="weighin-step-btn"
+                  className="grid min-h-[62px] shrink-0 grow-0 basis-11 touch-manipulation place-items-center rounded-[14px] border border-border bg-background text-foreground transition-[background,transform] duration-150 hover:bg-accent active:scale-[0.95] active:bg-accent"
                   aria-label="Decrease weight"
                   onClick={() => nudgeWeight(-2.5)}
                 >
                   <Minus size={18} />
                 </button>
-                <div className="weighin-display">
+                <div className="min-w-0 flex-1 rounded-[14px] border border-border bg-background px-2 pt-[6px] pb-[10px] text-center focus-within:border-ring focus-within:shadow-[0_0_0_3px_color-mix(in_srgb,var(--ring)_25%,transparent)]">
                   <input
                     type="number"
                     min="0"
                     step="0.5"
                     inputMode="decimal"
+                    className="w-full border-0 bg-transparent p-0 text-center text-[32px] font-bold tracking-[-1.5px] leading-[1.1] text-foreground outline-none [appearance:textfield] [-moz-appearance:textfield] focus-visible:outline-none [&::-webkit-inner-spin-button]:m-0 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:m-0 [&::-webkit-outer-spin-button]:appearance-none"
                     aria-label={`Weight in ${unit}`}
                     value={pad.weight}
                     onChange={(event) =>
@@ -866,11 +890,13 @@ function ExerciseDeck({
                       }
                     }}
                   />
-                  <span className="weighin-unit">{unit}</span>
+                  <span className="text-[12px] font-extrabold tracking-[1.2px] text-muted-foreground uppercase">
+                    {unit}
+                  </span>
                 </div>
                 <button
                   type="button"
-                  className="weighin-step-btn"
+                  className="grid min-h-[62px] shrink-0 grow-0 basis-11 touch-manipulation place-items-center rounded-[14px] border border-border bg-background text-foreground transition-[background,transform] duration-150 hover:bg-accent active:scale-[0.95] active:bg-accent"
                   aria-label="Increase weight"
                   onClick={() => nudgeWeight(2.5)}
                 >
@@ -878,23 +904,26 @@ function ExerciseDeck({
                 </button>
               </div>
             </fieldset>
-            <fieldset className="set-pad-group weighin-fieldset">
-              <legend>Reps</legend>
-              <div className="weighin-stepper">
+            <fieldset className="m-0 min-w-0 border-0 p-0">
+              <legend className="mb-[7px] p-0 text-[11px] font-medium">
+                Reps
+              </legend>
+              <div className="mt-0 flex items-stretch gap-[10px]">
                 <button
                   type="button"
-                  className="weighin-step-btn"
+                  className="grid min-h-[62px] shrink-0 grow-0 basis-11 touch-manipulation place-items-center rounded-[14px] border border-border bg-background text-foreground transition-[background,transform] duration-150 hover:bg-accent active:scale-[0.95] active:bg-accent"
                   aria-label="Decrease reps"
                   onClick={() => nudgeReps(-1)}
                 >
                   <Minus size={18} />
                 </button>
-                <div className="weighin-display">
+                <div className="min-w-0 flex-1 rounded-[14px] border border-border bg-background px-2 pt-[6px] pb-[10px] text-center focus-within:border-ring focus-within:shadow-[0_0_0_3px_color-mix(in_srgb,var(--ring)_25%,transparent)]">
                   <input
                     type="number"
                     min="1"
                     step="1"
                     inputMode="numeric"
+                    className="w-full border-0 bg-transparent p-0 text-center text-[32px] font-bold tracking-[-1.5px] leading-[1.1] text-foreground outline-none [appearance:textfield] [-moz-appearance:textfield] focus-visible:outline-none [&::-webkit-inner-spin-button]:m-0 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:m-0 [&::-webkit-outer-spin-button]:appearance-none"
                     aria-label="Reps"
                     value={pad.reps}
                     onChange={(event) =>
@@ -909,11 +938,13 @@ function ExerciseDeck({
                       }
                     }}
                   />
-                  <span className="weighin-unit">reps</span>
+                  <span className="text-[12px] font-extrabold tracking-[1.2px] text-muted-foreground uppercase">
+                    reps
+                  </span>
                 </div>
                 <button
                   type="button"
-                  className="weighin-step-btn"
+                  className="grid min-h-[62px] shrink-0 grow-0 basis-11 touch-manipulation place-items-center rounded-[14px] border border-border bg-background text-foreground transition-[background,transform] duration-150 hover:bg-accent active:scale-[0.95] active:bg-accent"
                   aria-label="Increase reps"
                   onClick={() => nudgeReps(1)}
                 >
@@ -922,13 +953,13 @@ function ExerciseDeck({
               </div>
             </fieldset>
           </div>
-          <div className="set-pad-foot">
+          <div className="flex items-stretch gap-2">
             <motion.div
-              className="set-log-wrap"
+              className="min-w-0 flex-1"
               whileTap={valid ? { scale: 0.98 } : undefined}
             >
               <Button
-                className="set-log-btn"
+                className="h-auto min-h-[52px] w-full text-[14px]"
                 size="lg"
                 disabled={logSet.isPending || !valid}
                 onClick={submit}
@@ -978,10 +1009,10 @@ function ExerciseDeck({
         }}
       />
       {count > 1 && (
-        <div className="carousel-nav">
+        <div className="mt-3 flex items-center justify-between gap-3 max-mobile:hidden">
           <button
             type="button"
-            className="icon-link"
+            className="grid size-11 place-items-center rounded-full border border-border hover:bg-accent disabled:opacity-35"
             aria-label="Previous exercise"
             disabled={index <= 0}
             onClick={() => go(index - 1)}
@@ -989,7 +1020,7 @@ function ExerciseDeck({
             <ChevronLeft size={18} />
           </button>
           <span
-            className="carousel-position"
+            className="text-[12px] text-muted-foreground tabular-nums"
             aria-live="polite"
             aria-atomic="true"
           >
@@ -1000,7 +1031,7 @@ function ExerciseDeck({
           </span>
           <button
             type="button"
-            className="icon-link"
+            className="grid size-11 place-items-center rounded-full border border-border hover:bg-accent disabled:opacity-35"
             aria-label="Next exercise"
             disabled={index >= count - 1}
             onClick={() => go(index + 1)}
@@ -1071,15 +1102,15 @@ function AddExerciseDialog({
         if (!isOpen && !add.isPending) onClose();
       }}
     >
-      <DialogContent className="exercise-picker-dialog sm:max-w-lg">
+      <DialogContent className="exercise-picker-dialog flex max-h-[min(88dvh,780px)] flex-col gap-[14px] overflow-hidden sm:max-w-lg [&>button[aria-label=Close]]:hidden [&>*]:shrink-0">
         <DialogTitle className="sr-only">Add exercises</DialogTitle>
         <DialogDescription className="sr-only">
           Browse exercises and add them to your workout.
         </DialogDescription>
-        <div className="exercise-picker-library">
+        <div className="flex min-h-0 flex-[1_1_0] flex-col gap-[14px] overflow-hidden">
           {selected.length > 0 && (
             <ScrollArea
-              className="exercise-selection-summary"
+              className="h-9 shrink-0 grow-0 basis-9"
               orientation="horizontal"
               type="always"
               role="region"
@@ -1090,6 +1121,7 @@ function AddExerciseDialog({
                   <Badge key={exercise.id} variant="secondary" asChild>
                     <button
                       type="button"
+                      className="h-[26px] max-w-[180px] cursor-pointer text-[10px] hover:bg-accent [&_svg]:shrink-0"
                       disabled={add.isPending}
                       onClick={() => toggle(exercise)}
                       aria-label={`Deselect ${exercise.name}`}
@@ -1103,22 +1135,26 @@ function AddExerciseDialog({
             </ScrollArea>
           )}
           <ScrollArea
-            className="exercise-picker-results"
+            className="min-h-[80px] flex-[1_1_0] overflow-hidden overscroll-contain max-mobile:-mx-[18px] max-mobile:w-[calc(100%+36px)]"
             role="region"
             aria-label="Exercise library"
             type="always"
           >
-            <div className="exercise-picker-results-content">
+            <div className="flex flex-col gap-3 pt-1 pr-1 pb-2 pl-0 max-mobile:pr-[28px] max-mobile:pl-[18px]">
               {library.isPending && <ExercisePickerSkeleton count={6} />}
               {library.isError && (
-                <div className="inline-error">
+                <InlineNote>
                   Couldn't load.{" "}
-                  <button type="button" onClick={() => library.refetch()}>
+                  <button
+                    type="button"
+                    className="underline underline-offset-[3px]"
+                    onClick={() => library.refetch()}
+                  >
                     Retry
                   </button>
-                </div>
+                </InlineNote>
               )}
-              <div className="exercise-picker-grid">
+              <div className="grid grid-cols-2 items-stretch gap-3">
                 {exercises.map((exercise) => {
                   const checked = selected.some(
                     (item) => item.id === exercise.id,
@@ -1126,43 +1162,48 @@ function AddExerciseDialog({
                   return (
                     <article
                       key={exercise.id}
-                      className="exercise-picker-option"
+                      className="group relative flex min-w-0 cursor-pointer flex-col items-stretch gap-0 overflow-hidden rounded-xl border border-border bg-card p-0 transition-[border-color,transform] duration-150 hover:-translate-y-0.5 hover:border-[color-mix(in_oklab,var(--foreground)_28%,var(--border))] focus-within:outline-2 focus-within:outline-solid focus-within:outline-ring focus-within:-outline-offset-2 data-[selected=true]:border-ring data-[selected=true]:bg-accent"
                       data-selected={checked}
                     >
                       <button
                         type="button"
-                        className="exercise-picker-select-target"
+                        className="flex min-w-0 flex-1 flex-col gap-0 text-left"
                         aria-label={`${checked ? "Deselect" : "Select"} ${exercise.name}`}
                         disabled={
                           add.isPending || (!checked && selected.length >= 50)
                         }
                         onClick={() => toggle(exercise)}
                       >
-                        <span className="exercise-picker-image">
+                        <span className="flex aspect-[4/3] w-full items-center justify-center overflow-hidden bg-[#f5f7fa] [&_img]:h-full [&_img]:w-full [&_img]:object-contain [&_img]:transition-transform [&_img]:duration-200 group-hover:[&_img]:scale-[1.035]">
                           <img
                             src={exercise.gifUrl ?? exercise.imageUrl ?? ""}
                             alt=""
                             loading="lazy"
                           />
                         </span>
-                        <span className="exercise-picker-copy">
+                        <span className="flex min-w-0 flex-1 flex-col gap-2 px-[14px] pt-3 pb-[14px]">
                           <span className="min-w-0">
-                            <strong className="line-clamp-2">
+                            <strong className="line-clamp-2 text-[14px] leading-[1.35] font-semibold">
                               {exercise.name}
                             </strong>
-                            <span>
+                            <span className="text-[12px] leading-[1.4] text-muted-foreground capitalize">
                               {exercise.muscleGroup} · {exercise.equipment}
                             </span>
                           </span>
-                          <span className="exercise-picker-badges">
+                          <span className="mt-auto flex flex-wrap gap-[6px] pt-[2px]">
                             <Badge
                               variant="outline"
-                              className="max-w-full truncate capitalize"
+                              className="max-w-full truncate text-[11px] capitalize"
                             >
                               {exercise.target || exercise.muscleGroup}
                             </Badge>
                             {exercise.isCompound ? (
-                              <Badge variant="secondary">Compound</Badge>
+                              <Badge
+                                variant="secondary"
+                                className="text-[11px]"
+                              >
+                                Compound
+                              </Badge>
                             ) : null}
                           </span>
                         </span>
@@ -1170,7 +1211,7 @@ function AddExerciseDialog({
                       <AnimatePresence initial={false}>
                         {checked && (
                           <motion.span
-                            className="exercise-picker-check"
+                            className="absolute top-[14px] right-[14px] z-[2] grid size-5 place-items-center rounded-full bg-primary text-primary-foreground shadow-[0_2px_7px_rgb(0_0_0/0.25)] pointer-events-none [&_svg]:size-[13px] [&_svg]:stroke-[3]"
                             initial={{ scale: 0, rotate: -35 }}
                             animate={{ scale: 1, rotate: 0 }}
                             exit={{ scale: 0, rotate: 35 }}
@@ -1185,7 +1226,7 @@ function AddExerciseDialog({
                 })}
               </div>
               {exercises.length === 0 && !library.isPending && (
-                <p className="inline-empty">No matches.</p>
+                <InlineNote>No matches.</InlineNote>
               )}
               <InfiniteScrollTrigger
                 hasMore={library.hasNextPage}
@@ -1197,15 +1238,17 @@ function AddExerciseDialog({
             </div>
           </ScrollArea>
         </div>
-        <div className="exercise-picker-footer">
+        <div className="flex items-center gap-[10px] border-t border-border pt-3 max-mobile:flex-nowrap">
           <SearchBar
             aria-label="Search exercises to add"
             placeholder="Search exercises…"
             value={search}
             disabled={add.isPending}
             onValueChange={setSearch}
+            containerClassName="min-w-0 flex-[1_1_0]"
           />
           <Button
+            className="min-h-11 shrink-0"
             disabled={!selected.length || add.isPending}
             onClick={() => void submit()}
           >

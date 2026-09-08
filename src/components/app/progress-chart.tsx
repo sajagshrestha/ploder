@@ -97,14 +97,14 @@ export function ProgressChart({
   );
 
   return (
-    <div className="progress-chart">
+    <div className="min-w-0 [&_svg_text]:[font-family:Manrope,sans-serif] [&_svg_text]:text-[10px]">
       <Chart
         definition={definition}
         height={220}
         initialWidth={520}
         ariaLabel={label}
       />
-      <details className="chart-data">
+      <details className="mt-[6px] text-[10px] text-muted-foreground [&_summary]:w-fit [&_summary]:cursor-pointer [&_table]:mt-3 [&_table]:w-full [&_table]:border-collapse [&_table]:text-left [&_td]:border-border [&_td]:border-b [&_td]:p-[7px] [&_th]:border-border [&_th]:border-b [&_th]:p-[7px]">
         <summary>View chart data</summary>
         <table>
           <caption>{label}</caption>

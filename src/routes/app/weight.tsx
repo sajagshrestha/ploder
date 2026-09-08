@@ -2,10 +2,13 @@ import { createFileRoute, useBlocker } from "@tanstack/react-router";
 import { Minus, Plus, RotateCcw, Scale, Trash2 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
+import { IconTile } from "@/components/app/icon-tile";
 import { ChartSkeleton } from "@/components/app/loading-skeletons";
+import { Panel, PanelHeading } from "@/components/app/panel";
 import { ProgressChart } from "@/components/app/progress-chart";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { InlineNote } from "@/components/ui/inline-note";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { NoData } from "@/components/ui/no-data";
@@ -29,6 +32,9 @@ import {
 export const Route = createFileRoute("/app/weight")({
   component: WeightPage,
 });
+
+const weighinChipClassName =
+  "min-h-[38px] touch-manipulation rounded-full border border-border bg-background px-[14px] py-2 text-xs font-bold text-foreground transition-[background,transform] duration-150 hover:bg-accent active:scale-[0.96] aria-[pressed=true]:border-primary aria-[pressed=true]:bg-primary aria-[pressed=true]:text-primary-foreground";
 
 function WeightPage() {
   const me = useMe();
@@ -152,41 +158,45 @@ function WeightPage() {
     });
   };
   return (
-    <div className="progress-page">
-      <div className="page-heading">
+    <div className="grid gap-6 max-mobile:gap-[18px]">
+      <div className="mb-[5px] flex items-center justify-between gap-5">
         <div>
-          <h1>
-            Weight<span className="heading-dot">.</span>
+          <h1 className="text-[clamp(24px,2.35vw,34px)] leading-[1.3] font-bold tracking-[-1.25px] max-mobile:text-[28px] max-mobile:tracking-[-1.1px]">
+            Weight<span className="text-chart-1">.</span>
           </h1>
         </div>
-        <span className="icon-tile blue">
+        <IconTile tone="blue">
           <Scale size={20} />
-        </span>
+        </IconTile>
       </div>
-      <div className="progress-layout">
-        <section className="dashboard-panel">
-          <div className="panel-heading">
+      <div className="grid grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)] gap-[22px] max-tablet:grid-cols-1">
+        <Panel>
+          <PanelHeading>
             <div>
-              <h2>Trend</h2>
+              <h2 className="text-[15px] font-bold tracking-[-0.35px]">
+                Trend
+              </h2>
             </div>
             <Scale size={19} />
-          </div>
+          </PanelHeading>
           {latestHistory.isPending ? (
             <ChartSkeleton />
           ) : latestHistory.isError ? (
-            <div className="inline-error">
+            <InlineNote className="[&_button]:underline [&_button]:underline-offset-[3px]">
               Couldn't load.{" "}
               <button type="button" onClick={() => latestHistory.refetch()}>
                 Retry
               </button>
-            </div>
+            </InlineNote>
           ) : latest ? (
             <>
-              <p className="weight-value">
+              <p className="text-[39px] font-semibold tracking-[-1.5px]">
                 {Number(latest.weight).toFixed(1)}
-                <span>{unit}</span>
+                <span className="ml-[6px] text-[15px] font-normal tracking-normal text-muted-foreground">
+                  {unit}
+                </span>
               </p>
-              <p className="weight-delta">
+              <p className="mt-[5px] mb-[15px] text-[11px] text-muted-foreground">
                 {delta !== null
                   ? `${delta > 0 ? "+" : ""}${delta.toFixed(1)} ${unit} vs prev`
                   : "First check-in."}
@@ -197,7 +207,9 @@ function WeightPage() {
                 kind="line"
                 unit={unit}
               />
-              <p className="chart-data">Latest {weightRows.length}.</p>
+              <p className="mt-[6px] text-[10px] text-muted-foreground">
+                Latest {weightRows.length}.
+              </p>
             </>
           ) : (
             <NoData
@@ -207,26 +219,31 @@ function WeightPage() {
               description="Log your first weigh-in using the form to start tracking your trend."
             />
           )}
-        </section>
-        <section className="dashboard-panel">
-          <div className="panel-heading">
+        </Panel>
+        <Panel>
+          <PanelHeading>
             <div>
-              <h2>Log weight</h2>
+              <h2 className="text-[15px] font-bold tracking-[-0.35px]">
+                Log weight
+              </h2>
             </div>
-          </div>
-          <form className="form-stack" onSubmit={submit}>
+          </PanelHeading>
+          <form
+            className="grid gap-[18px] [&_label]:mb-[7px] [&_label]:text-[12px]"
+            onSubmit={submit}
+          >
             <div>
               <Label htmlFor="bw-weight">Weight</Label>
-              <div className="weighin-stepper">
+              <div className="mt-2 flex items-stretch gap-[10px]">
                 <button
                   type="button"
-                  className="weighin-step-btn"
+                  className="grid min-h-[72px] shrink-0 grow-0 basis-[54px] touch-manipulation place-items-center rounded-[14px] border border-border bg-background text-foreground transition-[background,transform] duration-150 hover:bg-accent active:scale-[0.95] active:bg-accent"
                   aria-label="Decrease weight by 0.1"
                   onClick={() => nudge(-0.1)}
                 >
                   <Minus size={20} />
                 </button>
-                <div className="weighin-display">
+                <div className="min-w-0 flex-1 rounded-[14px] border border-border bg-background px-2 pt-[6px] pb-[10px] text-center focus-within:border-ring focus-within:shadow-[0_0_0_3px_color-mix(in_srgb,var(--ring)_25%,transparent)]">
                   <input
                     id="bw-weight"
                     type="number"
@@ -238,12 +255,15 @@ function WeightPage() {
                     aria-describedby="bw-delta"
                     value={weight}
                     onChange={(event) => setWeight(event.target.value)}
+                    className="w-full border-0 bg-transparent p-0 text-center text-[44px] leading-[1.1] font-bold tracking-[-1.5px] text-foreground [appearance:textfield] outline-none [-moz-appearance:textfield] focus-visible:outline-none [&::-webkit-inner-spin-button]:m-0 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:m-0 [&::-webkit-outer-spin-button]:appearance-none"
                   />
-                  <span className="weighin-unit">{unit}</span>
+                  <span className="text-xs font-extrabold tracking-[1.2px] text-muted-foreground uppercase">
+                    {unit}
+                  </span>
                 </div>
                 <button
                   type="button"
-                  className="weighin-step-btn"
+                  className="grid min-h-[72px] shrink-0 grow-0 basis-[54px] touch-manipulation place-items-center rounded-[14px] border border-border bg-background text-foreground transition-[background,transform] duration-150 hover:bg-accent active:scale-[0.95] active:bg-accent"
                   aria-label="Increase weight by 0.1"
                   onClick={() => nudge(0.1)}
                 >
@@ -251,20 +271,24 @@ function WeightPage() {
                 </button>
               </div>
             </div>
-            <fieldset className="weighin-chips">
+            <fieldset className="mx-0 mt-2 flex min-w-0 flex-wrap gap-2 border-0 p-0">
               <legend className="sr-only">Quick adjust</legend>
               {[-1, -0.5, 0.5, 1].map((step) => (
                 <button
                   key={step}
                   type="button"
-                  className="weighin-chip"
+                  className={weighinChipClassName}
                   onClick={() => nudge(step)}
                 >
                   {step > 0 ? `+${step}` : step}
                 </button>
               ))}
             </fieldset>
-            <p id="bw-delta" className="weighin-delta" aria-live="polite">
+            <p
+              id="bw-delta"
+              className="m-0 min-h-[20px] text-center text-xs text-muted-foreground [&_strong]:text-foreground"
+              aria-live="polite"
+            >
               {liveDelta !== null && latest ? (
                 <>
                   <strong>
@@ -277,12 +301,14 @@ function WeightPage() {
                 "Delta appears here."
               )}
             </p>
-            <fieldset className="weighin-fieldset">
-              <legend>Date</legend>
-              <div className="weighin-chips">
+            <fieldset className="mx-0 min-w-0 border-0 p-0">
+              <legend className="mb-[7px] p-0 text-[11px] font-medium">
+                Date
+              </legend>
+              <div className="mt-2 flex flex-wrap gap-2">
                 <button
                   type="button"
-                  className="weighin-chip"
+                  className={weighinChipClassName}
                   aria-pressed={date === todayKey}
                   onClick={() => {
                     setDate(todayKey);
@@ -293,7 +319,7 @@ function WeightPage() {
                 </button>
                 <button
                   type="button"
-                  className="weighin-chip"
+                  className={weighinChipClassName}
                   aria-pressed={date === yesterdayKey}
                   onClick={() => {
                     setDate(yesterdayKey);
@@ -304,7 +330,7 @@ function WeightPage() {
                 </button>
                 <button
                   type="button"
-                  className="weighin-chip"
+                  className={weighinChipClassName}
                   aria-pressed={showCustomDate || isCustomDate}
                   aria-expanded={showCustomDate || isCustomDate}
                   aria-controls="bw-date"
@@ -327,9 +353,9 @@ function WeightPage() {
                 />
               </div>
             )}
-            <div className="weighin-actions">
+            <div className="flex gap-2">
               <Button
-                className="weighin-save"
+                className="min-w-0 flex-1"
                 disabled={logWeight.isPending || !weightValid}
                 type="submit"
                 size="lg"
@@ -353,7 +379,7 @@ function WeightPage() {
               )}
             </div>
           </form>
-        </section>
+        </Panel>
       </div>
       <Dialog
         open={blocker.status === "blocked"}
@@ -405,30 +431,35 @@ function WeightPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-      <section className="dashboard-panel">
-        <div className="panel-heading">
-          <h2>History</h2>
-          <span className="chart-data">{history.data?.total ?? 0}</span>
-        </div>
+      <Panel>
+        <PanelHeading>
+          <h2 className="text-[15px] font-bold tracking-[-0.35px]">History</h2>
+          <span className="mt-[6px] text-[10px] text-muted-foreground">
+            {history.data?.total ?? 0}
+          </span>
+        </PanelHeading>
         {history.isError ? (
-          <div className="inline-error">
+          <InlineNote className="[&_button]:underline [&_button]:underline-offset-[3px]">
             Couldn't load.{" "}
             <button type="button" onClick={() => history.refetch()}>
               Retry
             </button>
-          </div>
+          </InlineNote>
         ) : (
-          <div className="weight-history-list">
+          <div className="grid grid-cols-3 gap-3 max-tablet:grid-cols-2 max-mobile:grid-cols-1">
             {entries.map((entry) => (
-              <div className="weight-history-entry" key={entry.id}>
-                <span className="icon-tile blue">
+              <div
+                className="flex items-center gap-2 rounded-[10px] border border-border p-[13px] [&_div]:flex-1"
+                key={entry.id}
+              >
+                <IconTile tone="blue">
                   <Scale size={16} />
-                </span>
+                </IconTile>
                 <div>
-                  <strong>
+                  <strong className="text-xs">
                     {entry.weight} {unit}
                   </strong>
-                  <small>
+                  <small className="mt-1 block text-[10px] text-muted-foreground">
                     {new Date(
                       `${entry.recordedAt}T12:00:00`,
                     ).toLocaleDateString(undefined, { dateStyle: "medium" })}
@@ -448,11 +479,13 @@ function WeightPage() {
           </div>
         )}
         {history.data?.total === 0 && (
-          <p className="form-help">No check-ins yet.</p>
+          <p className="mb-[22px] text-xs leading-[1.8] text-muted-foreground">
+            No check-ins yet.
+          </p>
         )}
         {totalPages > 1 && (
           <div className="mt-5 flex items-center justify-between gap-3">
-            <p className="chart-data">
+            <p className="mt-[6px] text-[10px] text-muted-foreground">
               Page {page} of {totalPages}
             </p>
             <div className="flex gap-2">
@@ -475,7 +508,7 @@ function WeightPage() {
             </div>
           </div>
         )}
-      </section>
+      </Panel>
       <ConfirmDialog
         open={deleting !== null}
         onOpenChange={(open) => !open && setDeleting(null)}

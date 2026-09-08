@@ -42,7 +42,10 @@ export function AccountMenu({
           aria-label="Account menu"
           className={
             withName
-              ? cn("drawer-identity-trigger", className)
+              ? cn(
+                  "flex cursor-pointer items-center justify-start gap-[11px] rounded-lg border-0 bg-transparent p-0 text-left [font:inherit] text-inherit outline-none focus-visible:shadow-[0_0_0_2px_var(--ring)]",
+                  className,
+                )
               : cn(
                   "rounded-full outline-none focus-visible:ring-2 focus-visible:ring-ring",
                   className,

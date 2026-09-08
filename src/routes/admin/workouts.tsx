@@ -1,8 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 
+import { Panel } from "@/components/app/panel";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Eyebrow } from "@/components/ui/eyebrow";
 import {
   Table,
   TableBody,
@@ -26,21 +28,20 @@ function AdminWorkouts() {
     : 1;
 
   return (
-    <div className="overview-page">
-      <div className="page-heading">
+    <div className="grid gap-6 max-mobile:gap-[18px]">
+      <div className="mb-[5px] flex items-center justify-between gap-5">
         <div>
-          <p className="eyebrow">LOGGED SESSIONS</p>
-          <h1>
-            Every workout<span className="heading-dot">.</span>
+          <Eyebrow>LOGGED SESSIONS</Eyebrow>
+          <h1 className="text-[clamp(24px,2.35vw,34px)] leading-[1.3] font-bold tracking-[-1.25px] max-mobile:text-[28px] max-mobile:tracking-[-1.1px]">
+            Every workout<span className="text-chart-1">.</span>
           </h1>
-          <p>Read-only view of all logged workouts.</p>
+          <p className="mt-[9px] text-[13px] text-muted-foreground max-mobile:text-[11px]">
+            Read-only view of all logged workouts.
+          </p>
         </div>
       </div>
 
-      <section
-        className="dashboard-panel"
-        style={{ padding: 0, overflow: "hidden" }}
-      >
+      <Panel className="overflow-hidden p-0">
         <Table>
           <TableHeader>
             <TableRow>
@@ -93,7 +94,7 @@ function AdminWorkouts() {
             )}
           </TableBody>
         </Table>
-      </section>
+      </Panel>
 
       <TablePagination
         page={page}

@@ -1,6 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 
+import { Panel } from "@/components/app/panel";
+import { Eyebrow } from "@/components/ui/eyebrow";
 import {
   Table,
   TableBody,
@@ -26,21 +28,20 @@ function AdminBodyWeights() {
     : 1;
 
   return (
-    <div className="overview-page">
-      <div className="page-heading">
+    <div className="grid gap-6 max-mobile:gap-[18px]">
+      <div className="mb-[5px] flex items-center justify-between gap-5">
         <div>
-          <p className="eyebrow">PROGRESS DATA</p>
-          <h1>
-            Body weight<span className="heading-dot">.</span>
+          <Eyebrow>PROGRESS DATA</Eyebrow>
+          <h1 className="text-[clamp(24px,2.35vw,34px)] leading-[1.3] font-bold tracking-[-1.25px] max-mobile:text-[28px] max-mobile:tracking-[-1.1px]">
+            Body weight<span className="text-chart-1">.</span>
           </h1>
-          <p>Read-only view of all body weight entries.</p>
+          <p className="mt-[9px] text-[13px] text-muted-foreground max-mobile:text-[11px]">
+            Read-only view of all body weight entries.
+          </p>
         </div>
       </div>
 
-      <section
-        className="dashboard-panel"
-        style={{ padding: 0, overflow: "hidden" }}
-      >
+      <Panel className="overflow-hidden p-0">
         <Table>
           <TableHeader>
             <TableRow>
@@ -77,7 +78,7 @@ function AdminBodyWeights() {
             )}
           </TableBody>
         </Table>
-      </section>
+      </Panel>
 
       <TablePagination
         page={page}

@@ -112,15 +112,25 @@ function ManagerList({
     }
   };
   return (
-    <div className="workout-manager">
-      <div className="manager-heading">
-        <div>
-          <h2>
-            Exercises <span>{rows.length}</span>
+    <div className="grid min-w-0 gap-[14px]">
+      <div className="flex items-center justify-between gap-3 max-mobile:flex-wrap max-mobile:items-start">
+        <div className="max-mobile:flex-[1_1_150px]">
+          <h2 className="text-[20px] font-bold">
+            Exercises{" "}
+            <span className="ml-[6px] text-[14px] text-muted-foreground">
+              {rows.length}
+            </span>
           </h2>
-          {rows.length > 0 && <p id="reorder-help">Drag to reorder.</p>}
+          {rows.length > 0 && (
+            <p
+              id="reorder-help"
+              className="mt-[6px] text-[12px] text-muted-foreground"
+            >
+              Drag to reorder.
+            </p>
+          )}
         </div>
-        <Button onClick={onAdd} disabled={busy}>
+        <Button onClick={onAdd} disabled={busy} className="min-h-11 shrink-0">
           <Plus size={16} /> Add exercise
         </Button>
       </div>
@@ -131,7 +141,7 @@ function ManagerList({
         ref={(node) => {
           listDrop(node);
         }}
-        className="manager-list"
+        className="m-0 grid list-none gap-2 p-0"
         aria-label="Workout exercises"
       >
         {rows.map((exercise, index) => (
@@ -276,19 +286,19 @@ function SortableExercise({
         row.current = node;
         drop(node);
       }}
-      className="manager-row-slot"
+      className="min-w-0"
     >
       <motion.div
         layout="position"
         transition={{ duration: reducedMotion ? 0 : 0.16, ease: "easeOut" }}
-        className="manager-row"
+        className="flex min-w-0 items-center gap-1 rounded-xl border border-border bg-card p-[6px] data-[dragging=true]:border-dashed data-[dragging=true]:border-primary data-[dragging=true]:bg-accent data-[dragging=true]:[&>*]:invisible"
         data-dragging={dragging}
       >
         <button
           ref={(node) => {
             drag(node);
           }}
-          className="manager-drag-handle"
+          className="grid min-h-12 w-11 shrink-0 grow-0 basis-11 cursor-grab touch-none place-items-center rounded-lg border-0 bg-transparent text-muted-foreground focus-visible:outline-2 focus-visible:outline-solid focus-visible:outline-ring focus-visible:outline-offset-1 disabled:cursor-default disabled:opacity-50 active:cursor-grabbing"
           type="button"
           disabled={disabled}
           aria-label={`Reorder ${exercise.exerciseName}`}
@@ -302,20 +312,23 @@ function SortableExercise({
         >
           <GripVertical size={20} />
         </button>
-        <div className="manager-exercise manager-exercise-with-image">
+        <div className="flex min-h-[60px] min-w-0 flex-1 flex-row items-center justify-start gap-3 border-0 bg-none px-0 py-[6px] text-left text-foreground">
           <ExerciseThumbnail
             src={exercise.gifUrl ?? exercise.imageUrl}
             exerciseId={exercise.exerciseId}
             name={exercise.exerciseName ?? "Exercise"}
+            className="grid h-20 w-20 shrink-0 place-items-center overflow-hidden rounded-[10px] bg-muted text-muted-foreground [&_img]:h-full [&_img]:w-full [&_img]:object-contain"
           />
           <button
             type="button"
             onClick={onSelect}
             disabled={disabled}
-            className="manager-exercise-copy text-left"
+            className="flex min-w-0 flex-col gap-[5px] text-left focus-visible:outline-2 focus-visible:outline-solid focus-visible:outline-ring focus-visible:outline-offset-1 disabled:cursor-default disabled:opacity-50"
           >
-            <strong>{exercise.exerciseName ?? "Exercise"}</strong>
-            <span>
+            <strong className="text-[14px] leading-[1.4] break-anywhere text-foreground">
+              {exercise.exerciseName ?? "Exercise"}
+            </strong>
+            <span className="text-[11px] text-muted-foreground">
               {index + 1} · {exercise.sets.length}{" "}
               {exercise.sets.length === 1 ? "set" : "sets"}
             </span>
@@ -323,7 +336,7 @@ function SortableExercise({
         </div>
         <button
           type="button"
-          className="manager-delete"
+          className="grid min-h-12 w-11 shrink-0 grow-0 basis-11 place-items-center rounded-lg border-0 bg-transparent text-muted-foreground hover:bg-muted hover:text-destructive focus-visible:outline-2 focus-visible:outline-solid focus-visible:outline-ring focus-visible:outline-offset-1 disabled:cursor-default disabled:opacity-50"
           disabled={disabled}
           aria-label={`Remove ${exercise.exerciseName}`}
           onClick={onRemove}
@@ -371,7 +384,7 @@ function ExerciseDragPreview() {
   // Portal avoids transformed page ancestors shifting the fixed preview.
   return createPortal(
     <div
-      className="manager-row manager-drag-preview"
+      className="flex min-w-0 items-center gap-1 rounded-xl border border-primary bg-card p-[6px] fixed z-[100] pointer-events-none will-change-transform shadow-[0_8px_24px_color-mix(in_srgb,var(--foreground)_14%,transparent)]"
       aria-hidden="true"
       style={{
         left: 0,
@@ -381,19 +394,24 @@ function ExerciseDragPreview() {
         transform: `translate3d(${item.rect.left + offset.x - initialOffset.x}px, ${item.rect.top + offset.y - initialOffset.y}px, 0)`,
       }}
     >
-      <span className="manager-drag-handle">
+      <span className="grid min-h-12 w-11 shrink-0 grow-0 basis-11 place-items-center rounded-lg border-0 bg-transparent text-muted-foreground">
         <GripVertical size={20} />
       </span>
-      <span className="manager-exercise manager-exercise-with-image">
-        <ExerciseThumbnail src={item.imageUrl} />
-        <span className="manager-exercise-copy">
-          <strong>{item.name}</strong>
-          <span>
+      <span className="flex min-h-[60px] min-w-0 flex-1 flex-row items-center justify-start gap-3 border-0 bg-none px-0 py-[6px] text-left text-foreground">
+        <ExerciseThumbnail
+          src={item.imageUrl}
+          className="grid h-20 w-20 shrink-0 place-items-center overflow-hidden rounded-[10px] bg-muted text-muted-foreground [&_img]:h-full [&_img]:w-full [&_img]:object-contain"
+        />
+        <span className="flex min-w-0 flex-col gap-[5px]">
+          <strong className="text-[14px] leading-[1.4] break-anywhere text-foreground">
+            {item.name}
+          </strong>
+          <span className="text-[11px] text-muted-foreground">
             {item.index + 1} · {item.sets} {item.sets === 1 ? "set" : "sets"}
           </span>
         </span>
       </span>
-      <span className="manager-delete">
+      <span className="grid min-h-12 w-11 shrink-0 grow-0 basis-11 place-items-center rounded-lg border-0 bg-transparent text-muted-foreground">
         <Trash2 size={17} />
       </span>
     </div>,

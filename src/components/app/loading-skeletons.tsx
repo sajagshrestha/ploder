@@ -71,18 +71,21 @@ export function ListSkeleton({
 
 export function ExercisePickerSkeleton({ count = 6 }: { count?: number }) {
   return (
-    <div className="exercise-picker-grid" aria-hidden="true">
+    <div className="grid grid-cols-2 items-stretch gap-3" aria-hidden="true">
       {PLACEHOLDER_KEYS.slice(0, count).map((key) => (
-        <div key={key} className="exercise-picker-option">
-          <div className="exercise-picker-image">
+        <div
+          key={key}
+          className="relative flex min-w-0 cursor-pointer flex-col items-stretch gap-0 overflow-hidden rounded-xl border border-border bg-card p-0"
+        >
+          <div className="flex aspect-[4/3] w-full items-center justify-center overflow-hidden bg-[#f5f7fa]">
             <Skeleton className="h-full w-full rounded-none" />
           </div>
-          <div className="exercise-picker-copy">
+          <div className="flex min-w-0 flex-1 flex-col gap-2 px-[14px] pt-3 pb-[14px]">
             <div className="min-w-0 space-y-2">
               <Skeleton className="h-4 w-3/4" />
               <Skeleton className="h-3 w-1/2" />
             </div>
-            <div className="exercise-picker-badges">
+            <div className="mt-auto flex flex-wrap gap-[6px] pt-[2px]">
               <Skeleton className="h-5 w-16 rounded-full" />
             </div>
           </div>
@@ -194,16 +197,16 @@ export function ExerciseCardSkeleton({ header = true }: { header?: boolean }) {
       aria-hidden="true"
     >
       {header ? (
-        <div className="session-top">
+        <div className="flex min-h-12 items-start gap-[10px] max-mobile:flex-wrap">
           <Skeleton className="h-7 w-36" />
           <Skeleton className="h-4 w-12" />
-          <div className="session-top-actions">
+          <div className="ml-auto flex shrink-0 items-center gap-2">
             <Skeleton className="size-[38px] rounded-xl" />
             <Skeleton className="h-[38px] w-24 rounded-xl" />
           </div>
         </div>
       ) : null}
-      <section className="ex-card min-h-[540px]">
+      <section className="relative flex min-h-[540px] flex-col gap-5 overflow-hidden rounded-[17px] border border-border bg-card p-6 text-left text-foreground mobile:basis-[46%] max-mobile:gap-4 max-mobile:p-[18px]">
         <Skeleton className="h-7 w-2/3" />
         <Skeleton className="min-h-0 flex-1" />
         <div className="grid grid-cols-[72px_1fr_72px] gap-4">

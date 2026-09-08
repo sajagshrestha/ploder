@@ -31,7 +31,7 @@ export function InfiniteScrollTrigger({
 
   if (loadedCount === 0) return null;
   return (
-    <div ref={triggerRef} className="infinite-scroll-status" aria-live="polite">
+    <div ref={triggerRef} className="flex min-h-11 items-center justify-center gap-[7px] text-center text-xs text-muted-foreground" aria-live="polite">
       {isLoading ? (
         <>
           <LoaderCircle className="animate-spin" size={16} /> Loading more…

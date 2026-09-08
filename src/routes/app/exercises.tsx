@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { InfiniteScrollTrigger } from "@/components/ui/infinite-scroll-trigger";
+import { InlineNote } from "@/components/ui/inline-note";
 import { NoData } from "@/components/ui/no-data";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { SearchBar } from "@/components/ui/search-bar";
@@ -42,7 +43,7 @@ function LibraryPage() {
   const total = library.data?.pages[0]?.total;
 
   return (
-    <div className="space-y-4 app-exercise-library">
+    <div className="space-y-4">
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Exercises.</h1>
       </div>
@@ -94,22 +95,30 @@ function LibraryPage() {
       </ScrollArea>
 
       {library.isError && (
-        <div className="inline-error">
+        <InlineNote>
           Couldn't load.{" "}
-          <button type="button" onClick={() => library.refetch()}>
+          <button
+            type="button"
+            className="underline underline-offset-[3px]"
+            onClick={() => library.refetch()}
+          >
             Retry
           </button>
-        </div>
+        </InlineNote>
       )}
       {library.isPending && (
-        <ListSkeleton count={6} media className="library-grid" />
+        <ListSkeleton
+          count={6}
+          media
+          className="grid grid-cols-[repeat(auto-fill,minmax(230px,1fr))] gap-4 max-mobile:grid-cols-1"
+        />
       )}
 
-      <div className="library-grid">
+      <div className="grid grid-cols-[repeat(auto-fill,minmax(230px,1fr))] gap-4 max-mobile:grid-cols-1 [&_[data-slot=card]]:overflow-hidden [&_[data-slot=card-content]]:flex-wrap">
         {exercises.map((exercise) => (
           <Card
             key={exercise.id}
-            className="exercise-library-card gap-0 py-0"
+            className="group min-w-0 gap-0 py-0 transition-[border-color,transform] duration-150 hover:-translate-y-0.5 hover:border-[color-mix(in_oklab,var(--foreground)_28%,var(--border))]"
             data-exercise-card
           >
             <ExerciseThumbnail
@@ -117,9 +126,9 @@ function LibraryPage() {
               exerciseId={exercise.id}
               name={exercise.name}
               triggerClassName="block w-full rounded-none"
-              className="exercise-library-image"
+              className="flex aspect-[4/3] w-full items-center justify-center overflow-hidden bg-[#f5f7fa] max-mobile:aspect-[16/9] group-hover:[&_img]:scale-[1.035] [&_img]:h-full [&_img]:w-full [&_img]:object-contain [&_img]:transition-transform [&_img]:duration-200"
             />
-            <CardContent className="exercise-library-copy">
+            <CardContent className="flex min-h-[148px] flex-col gap-2.5 p-[14px]">
               <div className="min-w-0">
                 <p className="line-clamp-2 text-sm font-semibold">
                   {exercise.name}

@@ -15,6 +15,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/responsive-alert-dialog";
 import { Button } from "@/components/ui/button";
+import { Eyebrow } from "@/components/ui/eyebrow";
 import { cn } from "@/lib/utils";
 
 type ConfirmDialogProps = {
@@ -54,7 +55,7 @@ export function ConfirmDialog({
         >
           {destructive ? <CircleAlert /> : <Info />}
         </AlertDialogMedia>
-        <p className="eyebrow">Please confirm</p>
+        <Eyebrow>Please confirm</Eyebrow>
         <AlertDialogTitle>{title}</AlertDialogTitle>
         {description &&
           (typeof description === "string" ? (

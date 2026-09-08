@@ -2,7 +2,9 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowLeft, CalendarDays, Dumbbell } from "lucide-react";
 import { SplitDays } from "@/components/admin/split-days";
 import { ListSkeleton } from "@/components/app/loading-skeletons";
+import { Panel } from "@/components/app/panel";
 import { Button } from "@/components/ui/button";
+import { Eyebrow } from "@/components/ui/eyebrow";
 import { ApiError } from "@/lib/api";
 import { useSplit } from "@/lib/queries";
 
@@ -14,7 +16,7 @@ function SplitPage() {
   const { id } = Route.useParams();
   const splitId = Number(id);
   return (
-    <div className="overview-page">
+    <div className="grid gap-6 max-mobile:gap-[18px]">
       <Button asChild variant="ghost" className="w-fit">
         <Link to="/admin/splits">
           <ArrowLeft className="size-4" />
@@ -37,7 +39,7 @@ function SplitEditor({ splitId }: { splitId: number }) {
   if (split.isPending) return <ListSkeleton count={3} tall />;
   if (split.isError)
     return (
-      <section className="dashboard-panel" role="alert">
+      <Panel role="alert">
         <h1>
           {split.error instanceof ApiError && split.error.status === 404
             ? "Split not found"
@@ -49,7 +51,7 @@ function SplitEditor({ splitId }: { splitId: number }) {
         <Button variant="outline" onClick={() => split.refetch()}>
           Try again
         </Button>
-      </section>
+      </Panel>
     );
   const plan = split.data.data;
   const count = plan.days.reduce(
@@ -58,14 +60,14 @@ function SplitEditor({ splitId }: { splitId: number }) {
   );
   return (
     <>
-      <div className="page-heading">
+      <div className="mb-[5px] flex items-center justify-between gap-5">
         <div>
-          <p className="eyebrow">SPLIT TEMPLATE</p>
-          <h1>
+          <Eyebrow>SPLIT TEMPLATE</Eyebrow>
+          <h1 className="text-[clamp(24px,2.35vw,34px)] leading-[1.3] font-bold tracking-[-1.25px] max-mobile:text-[28px] max-mobile:tracking-[-1.1px]">
             {plan.name}
-            <span className="heading-dot">.</span>
+            <span className="text-chart-1">.</span>
           </h1>
-          <p>
+          <p className="mt-[9px] text-[13px] text-muted-foreground max-mobile:text-[11px]">
             {plan.description ||
               "Build a training plan your members can make their own."}
           </p>
@@ -81,7 +83,7 @@ function SplitEditor({ splitId }: { splitId: number }) {
           {count} exercises
         </span>
       </div>
-      <section className="dashboard-panel space-y-4">
+      <Panel className="space-y-4">
         <div>
           <h2 className="font-semibold">Training days</h2>
           <p className="text-sm text-muted-foreground">
@@ -94,7 +96,7 @@ function SplitEditor({ splitId }: { splitId: number }) {
           </p>
         )}
         <SplitDays splitId={splitId} />
-      </section>
+      </Panel>
     </>
   );
 }

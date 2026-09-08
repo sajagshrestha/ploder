@@ -6,6 +6,7 @@ import { ListSkeleton } from "@/components/app/loading-skeletons";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { InlineNote } from "@/components/ui/inline-note";
 import { NoData } from "@/components/ui/no-data";
 import {
   AlertDialog,
@@ -65,17 +66,18 @@ function SplitsPage() {
       </div>
 
       {(tab === "mine" ? mine.isError : templates.isError) && (
-        <div className="inline-error">
+        <InlineNote>
           Couldn't load.{" "}
           <button
             type="button"
+            className="underline underline-offset-[3px]"
             onClick={() =>
               tab === "mine" ? mine.refetch() : templates.refetch()
             }
           >
             Retry
           </button>
-        </div>
+        </InlineNote>
       )}
       {tab === "mine" && (
         <div className="grid items-start gap-4 xl:grid-cols-2">

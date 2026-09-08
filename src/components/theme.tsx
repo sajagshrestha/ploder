@@ -153,30 +153,35 @@ export function ThemeToggle({ className }: { className?: string }) {
       <DialogTrigger asChild>
         <Button
           variant="ghost"
-          className={cn("appearance-trigger", className)}
+          className={cn("min-h-11 gap-2", className)}
           aria-label="Customize appearance"
         >
           <Palette size={17} /> Appearance
         </Button>
       </DialogTrigger>
-      <DialogContent className="appearance-dialog sm:max-w-lg">
+      <DialogContent className="flex flex-col gap-[22px] overflow-y-auto max-mobile:gap-5 data-[slot=drawer-content]:overflow-y-visible data-[slot=drawer-content]:px-5 max-mobile:data-[slot=drawer-content]:pb-[max(32px,env(safe-area-inset-bottom))] sm:max-w-lg [&_[data-slot=drawer-header]]:px-0">
         <DialogHeader>
           <DialogTitle>Make it yours</DialogTitle>
           <DialogDescription>
             A palette for your pace. Preview changes instantly.
           </DialogDescription>
         </DialogHeader>
-        <fieldset className="appearance-fieldset">
+        <fieldset className="min-w-0 [&_legend]:mb-[10px] [&_legend]:text-xs [&_legend]:font-bold [&_legend]:text-muted-foreground">
           <legend>Display</legend>
-          <div className="appearance-modes">
+          <div className="grid grid-cols-3 gap-1 rounded-xl bg-muted p-1">
             {modes.map(({ value, label, icon: Icon }) => (
-              <label key={value} data-selected={mode === value}>
+              <label
+                key={value}
+                data-selected={mode === value}
+                className="relative flex min-h-11 cursor-pointer items-center justify-center gap-[7px] rounded-[9px] text-xs text-muted-foreground focus-within:outline-2 focus-within:outline-ring focus-within:outline-offset-[3px] data-[selected=true]:bg-card data-[selected=true]:text-foreground"
+              >
                 <input
                   type="radio"
                   name="display-mode"
                   value={value}
                   checked={mode === value}
                   onChange={() => setMode(value)}
+                  className="absolute inset-0 m-0 h-full w-full cursor-pointer opacity-0"
                 />
                 <Icon size={17} />
                 <span>{label}</span>
@@ -184,14 +189,18 @@ export function ThemeToggle({ className }: { className?: string }) {
             ))}
           </div>
         </fieldset>
-        <fieldset className="appearance-fieldset">
+        <fieldset className="min-w-0 [&_legend]:mb-[10px] [&_legend]:text-xs [&_legend]:font-bold [&_legend]:text-muted-foreground">
           <legend>Color palette</legend>
-          <div className="palette-grid" ref={gridRef} onScroll={onGridScroll}>
+          <div
+            className="grid grid-cols-2 gap-3 max-mobile:gap-2.5 [[data-slot=drawer-content]_&]:mx-[-20px] [[data-slot=drawer-content]_&]:flex [[data-slot=drawer-content]_&]:gap-0 [[data-slot=drawer-content]_&]:overflow-x-auto [[data-slot=drawer-content]_&]:px-5 [[data-slot=drawer-content]_&]:pb-1 [[data-slot=drawer-content]_&]:[scroll-padding-inline:20px] [[data-slot=drawer-content]_&]:[scroll-snap-type:x_mandatory] [[data-slot=drawer-content]_&]:[scrollbar-width:none] [[data-slot=drawer-content]_&]:[&::-webkit-scrollbar]:hidden"
+            ref={gridRef}
+            onScroll={onGridScroll}
+          >
             {palettePages.map((items) => (
               <div className="palette-page" key={items[0]?.value}>
                 {items.map((item) => (
                   <label
-                    className="palette-option"
+                    className="relative grid cursor-pointer gap-2.5 rounded-xl border border-border p-[9px] focus-within:outline-2 focus-within:outline-ring focus-within:outline-offset-[3px] data-[selected=true]:border-ring data-[selected=true]:shadow-[inset_0_0_0_1px_var(--ring)]"
                     key={item.value}
                     data-selected={palette === item.value}
                   >
@@ -202,25 +211,26 @@ export function ThemeToggle({ className }: { className?: string }) {
                       value={item.value}
                       checked={palette === item.value}
                       onChange={() => setPalette(item.value)}
+                      className="absolute inset-0 m-0 h-full w-full cursor-pointer opacity-0"
                     />
                     <span
-                      className="palette-preview"
+                      className="relative flex h-[86px] gap-[7px] overflow-hidden rounded-lg border border-border bg-background p-[10px] max-mobile:h-[74px] max-mobile:p-[7px]"
                       data-theme-preview={item.value}
                       aria-hidden="true"
                     >
-                      <span className="palette-preview-bar" />
-                      <span className="palette-preview-surface">
+                      <span className="h-full w-[15%] rounded bg-accent" />
+                      <span className="flex flex-1 flex-col items-start gap-1.5 rounded-[5px] border border-border bg-card p-2 [&>b]:mt-auto [&>b]:block [&>b]:h-3 [&>b]:w-3/5 [&>b]:rounded-[3px] [&>b]:bg-primary [&>span]:h-1 [&>span]:w-3/4 [&>span]:rounded-[2px] [&>span]:bg-muted-foreground [&>span:nth-child(2)]:w-[45%] [&>span:nth-child(2)]:bg-border">
                         <span />
                         <span />
                         <b />
                       </span>
-                      <span className="palette-preview-dots">
+                      <span className="absolute right-[14px] bottom-[14px] flex gap-[3px] [&_i]:size-[5px] [&_i]:rounded-full [&_i]:bg-primary [&_i:nth-child(2)]:bg-accent [&_i:nth-child(3)]:bg-muted-foreground">
                         <i />
                         <i />
                         <i />
                       </span>
                     </span>
-                    <span className="palette-option-caption">
+                    <span className="flex items-center justify-between gap-1 [&_small]:mt-[2px] [&_small]:block [&_small]:text-[11px] [&_small]:text-muted-foreground [&_strong]:block [&_strong]:text-[13px] [&_svg]:shrink-0 [&_svg]:text-chart-1">
                       <span>
                         <strong>{item.name}</strong>
                         <small>{item.description}</small>
@@ -235,7 +245,7 @@ export function ThemeToggle({ className }: { className?: string }) {
             ))}
           </div>
           {palettePages.length > 1 && (
-            <div className="palette-pages">
+            <div className="flex h-6 items-center justify-center gap-1 [[data-slot=dialog-content]_&]:hidden">
               {palettePages.map((items, pageIndex) => (
                 <button
                   key={items[0]?.value}
@@ -243,6 +253,7 @@ export function ThemeToggle({ className }: { className?: string }) {
                   data-active={pageIndex === page}
                   aria-label={`Go to page ${pageIndex + 1}`}
                   onClick={() => goToPage(pageIndex)}
+                  className="h-[5px] flex-[0_0_24px] cursor-pointer rounded-full border-0 bg-border p-0 transition-[background-color,height] duration-200 data-[active=true]:h-[9px] data-[active=true]:bg-primary"
                 />
               ))}
             </div>

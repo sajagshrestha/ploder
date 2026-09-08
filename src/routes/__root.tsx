@@ -109,9 +109,11 @@ function RootDocument({ children }: { children: React.ReactNode }) {
           <HeadContent />
         </head>
         <body className="font-sans antialiased">
-          <div className="training-app app-loading">
-            <div className="brand-mark" />
-            <p>Getting your training space ready…</p>
+          <div className="training-app flex min-h-dvh flex-col items-center justify-center gap-5">
+            <div className="inline-flex h-[39px] w-[39px] -rotate-7 items-center justify-center rounded-[13px] bg-primary text-primary-foreground" />
+            <p className="text-xs text-muted-foreground">
+              Getting your training space ready…
+            </p>
           </div>
           <Scripts />
         </body>

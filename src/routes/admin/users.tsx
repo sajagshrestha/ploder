@@ -7,8 +7,10 @@ import {
 } from "@tanstack/react-table/legacy";
 import { useState } from "react";
 import { toast } from "sonner";
+import { Panel } from "@/components/app/panel";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Eyebrow } from "@/components/ui/eyebrow";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -131,14 +133,16 @@ function AdminUsers() {
     : 1;
 
   return (
-    <div className="overview-page">
-      <div className="page-heading">
+    <div className="grid gap-6 max-mobile:gap-[18px]">
+      <div className="mb-[5px] flex items-center justify-between gap-5">
         <div>
-          <p className="eyebrow">COMMUNITY</p>
-          <h1>
-            Members & roles<span className="heading-dot">.</span>
+          <Eyebrow>COMMUNITY</Eyebrow>
+          <h1 className="text-[clamp(24px,2.35vw,34px)] leading-[1.3] font-bold tracking-[-1.25px] max-mobile:text-[28px] max-mobile:tracking-[-1.1px]">
+            Members & roles<span className="text-chart-1">.</span>
           </h1>
-          <p>Manage user accounts and permissions.</p>
+          <p className="mt-[9px] text-[13px] text-muted-foreground max-mobile:text-[11px]">
+            Manage user accounts and permissions.
+          </p>
         </div>
       </div>
 
@@ -153,10 +157,7 @@ function AdminUsers() {
         }}
       />
 
-      <section
-        className="dashboard-panel"
-        style={{ padding: 0, overflow: "hidden" }}
-      >
+      <Panel className="overflow-hidden p-0">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
@@ -207,7 +208,7 @@ function AdminUsers() {
             )}
           </TableBody>
         </Table>
-      </section>
+      </Panel>
 
       <div className="flex items-center justify-between text-sm text-muted-foreground">
         <span>

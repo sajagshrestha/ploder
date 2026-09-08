@@ -19,6 +19,7 @@ import { ListSkeleton } from "@/components/app/loading-skeletons";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { Eyebrow } from "@/components/ui/eyebrow";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { NoData } from "@/components/ui/no-data";
@@ -215,7 +216,7 @@ function HistoryPage() {
     <div className="mx-auto max-w-5xl space-y-6">
       <header className="flex items-start justify-between gap-3">
         <div className="space-y-2">
-          <p className="eyebrow">Your training journal</p>
+          <Eyebrow>Your training journal</Eyebrow>
           <h1 className="text-3xl font-bold tracking-tight">Workout history</h1>
         </div>
         <Button

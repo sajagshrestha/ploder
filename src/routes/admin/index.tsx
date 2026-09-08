@@ -11,7 +11,10 @@ import {
   Users,
 } from "lucide-react";
 
+import { IconTile, type IconTileTone } from "@/components/app/icon-tile";
+import { Panel, PanelHeading } from "@/components/app/panel";
 import { Button } from "@/components/ui/button";
+import { Eyebrow } from "@/components/ui/eyebrow";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useStats } from "@/lib/queries";
 
@@ -22,7 +25,14 @@ export const Route = createFileRoute("/admin/")({
 function AdminDashboard() {
   const { data, isPending, isError, refetch } = useStats();
 
-  const stats = [
+  const stats: {
+    label: string;
+    value: number | undefined;
+    detail: string;
+    icon: typeof Dumbbell;
+    color: IconTileTone;
+    to: string;
+  }[] = [
     {
       label: "Exercises",
       value: data?.data.exercises,
@@ -55,12 +65,12 @@ function AdminDashboard() {
       color: "blue",
       to: "/admin/workouts",
     },
-  ] as const;
+  ];
 
   if (isError) {
     return (
-      <div className="overview-page">
-        <div className="app-empty">
+      <div className="grid gap-6 max-mobile:gap-[18px]">
+        <div className="grid min-h-[400px] content-center justify-items-center gap-[18px] text-center [&>p]:max-w-[360px] [&>p]:leading-[1.7] [&>p]:text-muted-foreground">
           <Dumbbell />
           <h1>Let’s reconnect.</h1>
           <p>We couldn’t load admin stats. Try again when you’re back.</p>
@@ -71,52 +81,62 @@ function AdminDashboard() {
   }
 
   return (
-    <div className="overview-page">
-      <div className="page-heading">
+    <div className="grid gap-6 max-mobile:gap-[18px]">
+      <div className="mb-[5px] flex items-center justify-between gap-5">
         <div>
-          <p className="eyebrow">ADMINISTRATION OVERVIEW</p>
-          <h1>
-            Coach the community<span className="heading-dot">.</span>
+          <Eyebrow>ADMINISTRATION OVERVIEW</Eyebrow>
+          <h1 className="text-[clamp(24px,2.35vw,34px)] leading-[1.3] font-bold tracking-[-1.25px] max-mobile:text-[28px] max-mobile:tracking-[-1.1px]">
+            Coach the community<span className="text-chart-1">.</span>
           </h1>
-          <p>Exercises, plans, members, and every logged rep — at a glance.</p>
+          <p className="mt-[9px] text-[13px] text-muted-foreground max-mobile:text-[11px]">
+            Exercises, plans, members, and every logged rep — at a glance.
+          </p>
         </div>
-        <span className="date-pill">
+        <span className="inline-flex shrink-0 items-center gap-2 rounded-[9px] border border-border bg-card px-3 py-2.5 text-xs max-tablet:hidden">
           <ShieldCheck size={15} />
           Admin space
         </span>
       </div>
 
-      <div className="stats-grid">
+      <div className="grid grid-cols-4 gap-[17px] has-[>:nth-child(2):last-child]:grid-cols-2 has-[>:nth-child(3):last-child]:grid-cols-3 max-desktop:gap-3 max-tablet:grid-cols-2 max-mobile:gap-[11px]">
         {stats.map((stat) => (
           <Link
             key={stat.label}
             to={stat.to}
-            className="rounded-2xl focus-visible:outline-none"
+            className="min-w-0 rounded-2xl focus-visible:outline-none"
           >
-            <section className="stat-card">
-              <div className="stat-label">
+            <section className="rounded-[15px] border border-border bg-card p-[19px] max-desktop:p-[15px] max-mobile:p-4">
+              <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground max-desktop:text-[9px] max-mobile:text-[10px]">
                 {stat.label}
-                <span className={`icon-tile ${stat.color}`}>
+                <IconTile tone={stat.color}>
                   <stat.icon size={17} />
-                </span>
+                </IconTile>
               </div>
               {isPending ? (
                 <Skeleton className="mt-2 h-9 w-20" />
               ) : (
-                <strong>{stat.value ?? "—"}</strong>
+                <strong className="my-[9px] block text-[29px] leading-[1.1] font-semibold tracking-[-1px] max-mobile:text-[28px]">
+                  {stat.value ?? "—"}
+                </strong>
               )}
-              <p>{stat.detail}</p>
+              <p className="text-[10px] leading-[1.6] text-muted-foreground max-mobile:leading-[1.5]">
+                {stat.detail}
+              </p>
             </section>
           </Link>
         ))}
       </div>
 
-      <div className="dashboard-middle-grid">
-        <section className="dashboard-panel">
-          <div className="panel-heading">
+      <div className="grid grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)] gap-[22px] max-desktop:gap-4 max-tablet:grid-cols-1">
+        <Panel>
+          <PanelHeading>
             <div>
-              <p className="eyebrow">WHERE TO NEXT</p>
-              <h2>Manage the library</h2>
+              <Eyebrow className="mb-[7px] text-[8px] tracking-[1.25px]">
+                WHERE TO NEXT
+              </Eyebrow>
+              <h2 className="text-[15px] font-bold tracking-[-0.35px]">
+                Manage the library
+              </h2>
             </div>
             <Link
               to="/admin/exercises"
@@ -125,8 +145,8 @@ function AdminDashboard() {
             >
               <ArrowUpRight size={20} />
             </Link>
-          </div>
-          <div className="plan-day-list">
+          </PanelHeading>
+          <div className="mb-4 grid">
             {[
               {
                 to: "/admin/exercises",
@@ -147,48 +167,70 @@ function AdminDashboard() {
                 hint: `${data?.data.users ?? "—"} users · ${data?.data.admins ?? 0} admins`,
               },
             ].map((row, i) => (
-              <Link key={row.to} to={row.to}>
-                <span className="day-number">
+              <Link
+                key={row.to}
+                to={row.to}
+                className="flex min-w-0 items-center gap-3 border-b border-border py-[13px] text-left transition-[padding] duration-200 hover:pl-1.5 [&_svg:last-child]:ml-auto"
+              >
+                <span className="grid h-[33px] w-[30px] shrink-0 place-items-center rounded-lg border border-border text-[10px] text-muted-foreground">
                   {String(i + 1).padStart(2, "0")}
                 </span>
                 <span>
-                  <strong>{row.title}</strong>
-                  <small>{row.hint}</small>
+                  <strong className="block text-xs font-semibold">
+                    {row.title}
+                  </strong>
+                  <small className="mt-1 block text-[10px] text-muted-foreground">
+                    {row.hint}
+                  </small>
                 </span>
                 <ArrowUpRight size={17} />
               </Link>
             ))}
           </div>
-          <Link to="/admin/splits" className="text-link">
+          <Link
+            to="/admin/splits"
+            className="inline-flex items-center gap-[9px] text-xs font-bold hover:underline hover:underline-offset-4"
+          >
             Open split templates
             <ArrowRight size={15} />
           </Link>
-        </section>
+        </Panel>
 
-        <section className="dashboard-panel">
-          <div className="panel-heading">
+        <Panel>
+          <PanelHeading>
             <div>
-              <p className="eyebrow">THE WORK BEING PUT IN</p>
-              <h2>Logged activity</h2>
+              <Eyebrow className="mb-[7px] text-[8px] tracking-[1.25px]">
+                THE WORK BEING PUT IN
+              </Eyebrow>
+              <h2 className="text-[15px] font-bold tracking-[-0.35px]">
+                Logged activity
+              </h2>
             </div>
             <ClipboardList size={20} />
-          </div>
-          <div className="active-plan-name">
-            <h3>
+          </PanelHeading>
+          <div className="mb-3 flex items-center justify-between gap-2.5">
+            <h3 className="text-xs font-bold">
               {isPending
                 ? "Loading…"
                 : `${data?.data.completedWorkouts ?? 0} sessions completed`}
             </h3>
-            <span>Live data</span>
+            <span className="shrink-0 rounded-[5px] bg-accent px-[6px] py-1 text-[10px] text-accent-foreground">
+              Live data
+            </span>
           </div>
-          <div className="recent-session-list">
-            <Link to="/admin/workouts">
-              <span className="session-icon">
+          <div>
+            <Link
+              to="/admin/workouts"
+              className="flex items-center gap-[14px] border-b border-border py-[15px] transition-colors last:border-b-0 last:pb-0 hover:bg-background"
+            >
+              <span className="grid h-[39px] w-[39px] shrink-0 place-items-center rounded-[11px] bg-muted text-muted-foreground max-mobile:h-[34px] max-mobile:w-[34px]">
                 <ClipboardList size={20} />
               </span>
-              <span className="session-name">
-                <strong>All workouts</strong>
-                <small>
+              <span className="min-w-0 flex-1">
+                <strong className="block text-[13px] font-semibold max-mobile:text-xs">
+                  All workouts
+                </strong>
+                <small className="mt-[5px] block text-[11px] text-muted-foreground">
                   {isPending
                     ? "Counting sessions…"
                     : `${data?.data.workouts ?? 0} total · ${data?.data.sets ?? 0} sets logged`}
@@ -196,13 +238,18 @@ function AdminDashboard() {
               </span>
               <ArrowRight size={17} />
             </Link>
-            <Link to="/admin/body-weights">
-              <span className="session-icon">
+            <Link
+              to="/admin/body-weights"
+              className="flex items-center gap-[14px] border-b border-border py-[15px] transition-colors last:border-b-0 last:pb-0 hover:bg-background"
+            >
+              <span className="grid h-[39px] w-[39px] shrink-0 place-items-center rounded-[11px] bg-muted text-muted-foreground max-mobile:h-[34px] max-mobile:w-[34px]">
                 <Scale size={20} />
               </span>
-              <span className="session-name">
-                <strong>Body weight entries</strong>
-                <small>
+              <span className="min-w-0 flex-1">
+                <strong className="block text-[13px] font-semibold max-mobile:text-xs">
+                  Body weight entries
+                </strong>
+                <small className="mt-[5px] block text-[11px] text-muted-foreground">
                   {isPending
                     ? "Counting weigh-ins…"
                     : `${data?.data.bodyWeights ?? 0} entries logged`}
@@ -211,7 +258,7 @@ function AdminDashboard() {
               <ArrowRight size={17} />
             </Link>
           </div>
-        </section>
+        </Panel>
       </div>
     </div>
   );
