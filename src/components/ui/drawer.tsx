@@ -25,7 +25,7 @@ function DrawerOverlay({ className, ...props }: React.ComponentProps<typeof Draw
 }
 
 function DrawerContent({ className, children, side = "bottom", ...props }: React.ComponentProps<typeof DrawerPrimitive.Content> & { side?: "bottom" | "right" }) {
-  return <DrawerPortal><DrawerOverlay /><DrawerPrimitive.Content data-slot="drawer-content" className={cn("fixed z-50 flex flex-col bg-card text-card-foreground outline-none", side === "bottom" && "inset-x-0 bottom-0 mt-24 min-h-[40dvh] max-h-[92dvh] rounded-t-[22px] border", side === "right" && "inset-y-0 right-0 h-full w-[86vw] max-w-[320px] border-l", className)} {...props}>{side === "bottom" && <div data-slot="drawer-handle" aria-hidden="true" className="mx-auto mt-4 h-2 w-[100px] shrink-0 rounded-full bg-muted-foreground/35" />}{children}</DrawerPrimitive.Content></DrawerPortal>;
+  return <DrawerPortal><DrawerOverlay /><DrawerPrimitive.Content data-slot="drawer-content" className={cn("fixed z-50 flex flex-col bg-card text-card-foreground outline-none", side === "bottom" && "inset-x-0 bottom-0 mt-24 min-h-[40dvh] max-h-[92dvh] rounded-t-[22px] border", side === "right" && "inset-y-0 right-0 h-full w-[86vw] max-w-[320px] border-l", className)} {...props}>{side === "bottom" && <div data-slot="drawer-handle" aria-hidden="true" className="mx-auto mt-2 h-1 w-10 shrink-0 rounded-full bg-muted-foreground/35" />}{children}</DrawerPrimitive.Content></DrawerPortal>;
 }
 
 function DrawerHeader({ className, ...props }: React.ComponentProps<"div">) {

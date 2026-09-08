@@ -34,6 +34,7 @@ import { toast } from "sonner";
 import { ExerciseThumbnail } from "@/components/app/exercise-thumbnail";
 import {
   ExerciseCardSkeleton,
+  ExercisePickerSkeleton,
   ListSkeleton,
 } from "@/components/app/loading-skeletons";
 import { Badge } from "@/components/ui/badge";
@@ -51,6 +52,7 @@ import {
 } from "@/components/ui/responsive-dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { SearchBar } from "@/components/ui/search-bar";
+import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import { useOverlayState } from "@/hooks/use-overlay-state";
 import {
   type MyWorkoutExercise,
@@ -1021,8 +1023,9 @@ function AddExerciseDialog({
 }) {
   const [search, setSearch] = useState("");
   const [selected, setSelected] = useState<Exercise[]>([]);
+  const debouncedSearch = useDebouncedValue(search);
   const library = useInfiniteMyExercises({
-    search: search || undefined,
+    search: debouncedSearch || undefined,
     pageSize: 20,
   });
   const exercises = library.data?.pages.flatMap((page) => page.data) ?? [];
@@ -1067,13 +1070,6 @@ function AddExerciseDialog({
           Browse exercises and add them to your workout.
         </DialogDescription>
         <div className="exercise-picker-library">
-          <SearchBar
-            aria-label="Search exercises to add"
-            placeholder="Search exercises…"
-            value={search}
-            disabled={add.isPending}
-            onValueChange={setSearch}
-          />
           {selected.length > 0 && (
             <ScrollArea
               className="exercise-selection-summary"
@@ -1106,7 +1102,7 @@ function AddExerciseDialog({
             type="always"
           >
             <div className="exercise-picker-results-content">
-              {library.isPending && <ListSkeleton count={5} media />}
+              {library.isPending && <ExercisePickerSkeleton count={6} />}
               {library.isError && (
                 <div className="inline-error">
                   Couldn't load.{" "}
@@ -1143,9 +1139,24 @@ function AddExerciseDialog({
                           />
                         </span>
                         <span className="exercise-picker-copy">
-                          <strong>{exercise.name}</strong>
-                          <span>
-                            {exercise.muscleGroup} · {exercise.equipment}
+                          <span className="min-w-0">
+                            <strong className="line-clamp-2">
+                              {exercise.name}
+                            </strong>
+                            <span>
+                              {exercise.muscleGroup} · {exercise.equipment}
+                            </span>
+                          </span>
+                          <span className="exercise-picker-badges">
+                            <Badge
+                              variant="outline"
+                              className="max-w-full truncate capitalize"
+                            >
+                              {exercise.target || exercise.muscleGroup}
+                            </Badge>
+                            {exercise.isCompound ? (
+                              <Badge variant="secondary">Compound</Badge>
+                            ) : null}
                           </span>
                         </span>
                       </button>
@@ -1153,14 +1164,9 @@ function AddExerciseDialog({
                         {checked && (
                           <motion.span
                             className="exercise-picker-check"
-                            initial={{ scale: 0.35, rotate: -35 }}
+                            initial={{ scale: 0, rotate: -35 }}
                             animate={{ scale: 1, rotate: 0 }}
-                            exit={{ scale: 0.35, rotate: 35 }}
-                            transition={{
-                              type: "spring",
-                              stiffness: 520,
-                              damping: 28,
-                            }}
+                            exit={{ scale: 0, rotate: 35 }}
                             aria-hidden="true"
                           >
                             <Check />
@@ -1185,16 +1191,19 @@ function AddExerciseDialog({
           </ScrollArea>
         </div>
         <div className="exercise-picker-footer">
+          <SearchBar
+            aria-label="Search exercises to add"
+            placeholder="Search exercises…"
+            value={search}
+            disabled={add.isPending}
+            onValueChange={setSearch}
+          />
           <Button
             disabled={!selected.length || add.isPending}
             onClick={() => void submit()}
           >
             <Plus size={16} />
-            {add.isPending
-              ? "Adding…"
-              : selected.length
-                ? `Add ${selected.length} ${selected.length === 1 ? "exercise" : "exercises"}`
-                : "Add selected"}
+            Add
           </Button>
         </div>
       </DialogContent>

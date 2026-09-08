@@ -16,6 +16,7 @@ import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { SearchBar } from "@/components/ui/search-bar";
+import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import { useCreateSplit, useDeleteSplit, useSplits } from "@/lib/queries";
 import { cn } from "@/lib/utils";
 
@@ -59,10 +60,11 @@ function AdminSplits() {
 
   const rows = splits.data?.data ?? [];
 
+  const debouncedSearch = useDebouncedValue(search);
   const visibleRows = rows.filter((row) =>
     `${row.name} ${row.description ?? ""}`
       .toLowerCase()
-      .includes(search.trim().toLowerCase()),
+      .includes(debouncedSearch.trim().toLowerCase()),
   );
 
   const toggle = (id: number) => {

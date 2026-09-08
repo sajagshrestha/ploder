@@ -43,6 +43,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import {
   type User,
   useDeleteUser,
@@ -60,7 +61,11 @@ function AdminUsers() {
   const [editing, setEditing] = useState<User | null>(null);
   const [deleting, setDeleting] = useState<User | null>(null);
 
-  const { data, isPending } = useUsers({ page, search: search || undefined });
+  const debouncedSearch = useDebouncedValue(search);
+  const { data, isPending } = useUsers({
+    page,
+    search: debouncedSearch || undefined,
+  });
   const updateUser = useUpdateUser();
   const deleteUser = useDeleteUser();
 

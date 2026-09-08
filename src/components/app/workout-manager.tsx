@@ -226,7 +226,7 @@ function SortableExercise({
           name: exercise.exerciseName ?? "Exercise",
           index,
           sets: exercise.sets.length,
-          imageUrl: exercise.imageUrl ?? exercise.gifUrl,
+          imageUrl: exercise.gifUrl ?? exercise.imageUrl,
           rect: {
             left: rect.left,
             top: rect.top,
@@ -304,7 +304,7 @@ function SortableExercise({
         </button>
         <div className="manager-exercise manager-exercise-with-image">
           <ExerciseThumbnail
-            src={exercise.imageUrl ?? exercise.gifUrl}
+            src={exercise.gifUrl ?? exercise.imageUrl}
             exerciseId={exercise.exerciseId}
             name={exercise.exerciseName ?? "Exercise"}
           />

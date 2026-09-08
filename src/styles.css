@@ -794,8 +794,8 @@ fieldset.weighin-chips, .weighin-fieldset { border: 0; margin-inline: 0; padding
 
 .exercise-thumbnail { display: grid; place-items: center; flex: 0 0 42px; width: 42px; height: 42px; border-radius: 8px; overflow: hidden; background: var(--muted); color: var(--muted-foreground); }
 .exercise-thumbnail img { width: 100%; height: 100%; object-fit: contain; }
-.manager-exercise.manager-exercise-with-image { display: flex; flex-direction: row; align-items: center; justify-content: flex-start; gap: 8px; }
-.manager-exercise-with-image .exercise-thumbnail { width: 34px; height: 40px; flex-basis: 34px; }
+.manager-exercise.manager-exercise-with-image { display: flex; flex-direction: row; align-items: center; justify-content: flex-start; gap: 12px; }
+.manager-exercise-with-image .exercise-thumbnail { width: 80px; height: 80px; flex-basis: 80px; border-radius: 10px; }
 .manager-exercise-copy { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
 .manager-exercise-copy strong { color: var(--foreground); }
 .exercise-picker-dialog { display: flex; flex-direction: column; gap: 14px; max-height: min(88dvh, 780px); overflow: hidden; }
@@ -803,20 +803,24 @@ fieldset.weighin-chips, .weighin-fieldset { border: 0; margin-inline: 0; padding
 .exercise-picker-dialog > * { flex-shrink: 0; }
 .exercise-picker-library { display: flex; min-height: 0; flex: 1 1 0; flex-direction: column; gap: 14px; overflow: hidden; }
 .exercise-picker-results { flex: 1 1 0; min-height: 80px; overflow: hidden; overscroll-behavior: contain; }
-.exercise-picker-results-content { display: flex; flex-direction: column; gap: 12px; padding: 4px 10px 8px 2px; }
-.exercise-picker-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
-.exercise-picker-option { position: relative; display: flex; min-width: 0; flex-direction: column; align-items: stretch; gap: 8px; padding: 8px; border: 1px solid var(--border); border-radius: 12px; cursor: pointer; overflow: hidden; }
+.exercise-picker-results-content { display: flex; flex-direction: column; gap: 12px; padding: 4px 4px 8px 0; }
+.exercise-picker-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; align-items: stretch; }
+.exercise-picker-option { position: relative; display: flex; min-width: 0; flex-direction: column; align-items: stretch; gap: 0; padding: 0; border: 1px solid var(--border); border-radius: 12px; cursor: pointer; overflow: hidden; background: var(--card); transition: border-color .15s ease, transform .15s ease; }
+.exercise-picker-option:hover { border-color: color-mix(in oklab, var(--foreground) 28%, var(--border)); transform: translateY(-2px); }
 .exercise-picker-option[data-selected="true"] { background: var(--accent); border-color: var(--ring); }
 .exercise-picker-option:focus-within { outline: 2px solid var(--ring); outline-offset: -2px; }
-.exercise-picker-copy { display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 0; }
-.exercise-picker-copy strong { font-size: 13px; line-height: 1.35; overflow-wrap: anywhere; }
-.exercise-picker-copy > span { font-size: 11px; line-height: 1.4; color: var(--muted-foreground); text-transform: capitalize; }
+.exercise-picker-copy { display: flex; flex: 1; flex-direction: column; gap: 8px; padding: 12px 14px 14px; min-width: 0; }
+.exercise-picker-copy strong { font-size: 14px; line-height: 1.35; font-weight: 600; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.exercise-picker-copy > span { font-size: 12px; line-height: 1.4; color: var(--muted-foreground); text-transform: capitalize; }
+.exercise-picker-badges { display: flex; flex-wrap: wrap; gap: 6px; margin-top: auto; padding-top: 2px; }
+.exercise-picker-badges [data-slot="badge"] { font-size: 11px; }
 .exercise-picker-check { position: absolute; z-index: 2; top: 14px; right: 14px; display: grid; width: 20px; height: 20px; place-items: center; border-radius: 999px; background: var(--primary); color: var(--primary-foreground); box-shadow: 0 2px 7px rgb(0 0 0 / .25); pointer-events: none; }
 .exercise-picker-check svg { width: 13px; height: 13px; stroke-width: 3; }
 .exercise-picker-media-trigger { display: block; width: 100%; border-radius: 8px; overflow: hidden; }
-.exercise-picker-select-target { display: flex; min-width: 0; flex-direction: column; gap: 8px; text-align: left; }
+.exercise-picker-select-target { display: flex; min-width: 0; flex: 1; flex-direction: column; gap: 0; text-align: left; }
 .exercise-picker-image { display: flex; width: 100%; aspect-ratio: 4 / 3; align-items: center; justify-content: center; overflow: hidden; background: #f5f7fa; }
-.exercise-picker-image img { width: 100%; height: 100%; object-fit: contain; }
+.exercise-picker-image img { width: 100%; height: 100%; object-fit: contain; transition: transform .2s ease; }
+.exercise-picker-option:hover .exercise-picker-image img { transform: scale(1.035); }
 .exercise-selection-summary { flex: 0 0 36px; height: 36px; }
 .exercise-selection-summary button { height: 26px; max-width: 180px; cursor: pointer; font-size: 10px; }
 .exercise-selection-summary button:hover { background: var(--accent); }
@@ -824,11 +828,11 @@ fieldset.weighin-chips, .weighin-fieldset { border: 0; margin-inline: 0; padding
 .exercise-picker-pagination { display: flex; align-items: center; justify-content: space-between; font-size: 11px; color: var(--muted-foreground); }
 .exercise-picker-pagination button { display: grid; place-items: center; width: 44px; height: 44px; border: 1px solid var(--border); border-radius: 9px; }
 .exercise-picker-pagination button:disabled { opacity: .4; }
-.exercise-picker-footer { display: flex; align-items: center; justify-content: flex-end; gap: 10px; padding-top: 16px; border-top: 1px solid var(--border); }
+.exercise-picker-footer { display: flex; align-items: center; gap: 10px; padding-top: 12px; border-top: 1px solid var(--border); }
 .exercise-picker-footer > span { font-size: 12px; color: var(--muted-foreground); }
-.exercise-picker-footer button { min-height: 44px; }
-.exercise-picker-footer button { width: 100%; }
-@media (max-width: 700px) { .exercise-picker-dialog { height: min(88dvh, 780px); padding: 0 18px 18px; gap: 10px; } .exercise-picker-footer { flex-wrap: wrap; } .exercise-picker-footer button { flex: 1; } .app-exercise-library .library-grid { grid-template-columns: minmax(0, 1fr); } .exercise-library-image { aspect-ratio: 16 / 9; } }
+.exercise-picker-footer [data-slot="search-bar"] { flex: 1 1 0; min-width: 0; }
+.exercise-picker-footer button { min-height: 44px; flex-shrink: 0; }
+@media (max-width: 700px) { [data-slot="drawer-content"].exercise-picker-dialog { height: 100dvh; max-height: 100dvh; min-height: 100dvh; margin-top: 0; border-radius: 0; border-right: 0; border-bottom: 0; border-left: 0; padding: 0 18px max(18px, env(safe-area-inset-bottom)); gap: 10px; } .exercise-picker-results { width: calc(100% + 36px); margin-inline: -18px; } .exercise-picker-results-content { padding-inline: 18px 28px; } .exercise-picker-footer { flex-wrap: nowrap; } .app-exercise-library .library-grid { grid-template-columns: minmax(0, 1fr); } .exercise-library-image { aspect-ratio: 16 / 9; } }
 
 /* Visual appearance picker, shared by desktop and the mobile menu. */
 .appearance-trigger { min-height: 44px; gap: 8px; }

@@ -69,6 +69,29 @@ export function ListSkeleton({
   );
 }
 
+export function ExercisePickerSkeleton({ count = 6 }: { count?: number }) {
+  return (
+    <div className="exercise-picker-grid" aria-hidden="true">
+      {PLACEHOLDER_KEYS.slice(0, count).map((key) => (
+        <div key={key} className="exercise-picker-option">
+          <div className="exercise-picker-image">
+            <Skeleton className="h-full w-full rounded-none" />
+          </div>
+          <div className="exercise-picker-copy">
+            <div className="min-w-0 space-y-2">
+              <Skeleton className="h-4 w-3/4" />
+              <Skeleton className="h-3 w-1/2" />
+            </div>
+            <div className="exercise-picker-badges">
+              <Skeleton className="h-5 w-16 rounded-full" />
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export function PanelSkeleton({
   rows = 3,
   chart = false,

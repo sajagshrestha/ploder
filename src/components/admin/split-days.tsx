@@ -1,5 +1,5 @@
 import { Plus, Trash2 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 import { ExerciseThumbnail } from "@/components/app/exercise-thumbnail";
 import { ListSkeleton } from "@/components/app/loading-skeletons";
@@ -9,6 +9,7 @@ import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { SearchBar } from "@/components/ui/search-bar";
+import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import {
   type SplitDetail,
   useCreateSplitDay,
@@ -309,7 +310,7 @@ function DayCard({ day }: { day: SplitDetail["days"][number] }) {
 
 function ExercisePicker({ day }: { day: SplitDetail["days"][number] }) {
   const [search, setSearch] = useState("");
-  const [query, setQuery] = useState({ search: "", page: 1 });
+  const [page, setPage] = useState(1);
   const [selected, setSelected] = useState<Map<number, string>>(
     () => new Map(),
   );
@@ -318,19 +319,17 @@ function ExercisePicker({ day }: { day: SplitDetail["days"][number] }) {
   const [repMax, setRepMax] = useState(12);
   const [busy, setBusy] = useState(false);
   const createEntry = useCreateSplitDayExercise();
-  useEffect(() => {
-    const timer = setTimeout(
-      () => setQuery({ search: search.trim(), page: 1 }),
-      250,
-    );
-    return () => clearTimeout(timer);
-  }, [search]);
-  const exercises = useExercises({ ...query, pageSize: 12 });
+  const debouncedSearch = useDebouncedValue(search.trim(), 250);
+  const exercises = useExercises({
+    search: debouncedSearch,
+    page,
+    pageSize: 12,
+  });
   const existing = new Set(day.exercises.map((entry) => entry.exerciseId));
   const available = (exercises.data?.data ?? []).filter(
     (exercise) => !existing.has(exercise.id),
   );
-  const waiting = search.trim() !== query.search || exercises.isFetching;
+  const waiting = search.trim() !== debouncedSearch || exercises.isFetching;
   const valid =
     Number.isInteger(sets) &&
     sets >= 1 &&
@@ -395,7 +394,10 @@ function ExercisePicker({ day }: { day: SplitDetail["days"][number] }) {
           aria-label={`Search exercises for ${day.name}`}
           placeholder="Search exercises by name or alias…"
           value={search}
-          onValueChange={setSearch}
+          onValueChange={(value) => {
+            setSearch(value);
+            setPage(1);
+          }}
         />
         <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
           <span role="status">
@@ -481,27 +483,21 @@ function ExercisePicker({ day }: { day: SplitDetail["days"][number] }) {
             type="button"
             size="sm"
             variant="outline"
-            disabled={waiting || query.page === 1}
-            onClick={() =>
-              setQuery((current) => ({ ...current, page: current.page - 1 }))
-            }
+            disabled={waiting || page === 1}
+            onClick={() => setPage((current) => current - 1)}
           >
             Previous
           </Button>
           <span className="text-xs text-muted-foreground">
-            Page {query.page} of{" "}
+            Page {page} of{" "}
             {Math.max(1, Math.ceil((exercises.data?.total ?? 0) / 12))}
           </span>
           <Button
             type="button"
             size="sm"
             variant="outline"
-            disabled={
-              waiting || query.page * 12 >= (exercises.data?.total ?? 0)
-            }
-            onClick={() =>
-              setQuery((current) => ({ ...current, page: current.page + 1 }))
-            }
+            disabled={waiting || page * 12 >= (exercises.data?.total ?? 0)}
+            onClick={() => setPage((current) => current + 1)}
           >
             Next
           </Button>

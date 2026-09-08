@@ -9,6 +9,7 @@ import { InfiniteScrollTrigger } from "@/components/ui/infinite-scroll-trigger";
 import { NoData } from "@/components/ui/no-data";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { SearchBar } from "@/components/ui/search-bar";
+import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import { useInfiniteMyExercises } from "@/lib/my-queries";
 
 export const Route = createFileRoute("/app/exercises")({
@@ -31,8 +32,9 @@ const MUSCLE_GROUPS = [
 function LibraryPage() {
   const [search, setSearch] = useState("");
   const [muscle, setMuscle] = useState<string | null>(null);
+  const debouncedSearch = useDebouncedValue(search);
   const library = useInfiniteMyExercises({
-    search: search || undefined,
+    search: debouncedSearch || undefined,
     muscleGroup: muscle ?? undefined,
     pageSize: 24,
   });

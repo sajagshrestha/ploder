@@ -41,6 +41,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useOverlayState } from "@/hooks/use-overlay-state";
 import {
@@ -88,6 +89,23 @@ function HistoryPage() {
   });
   const unit = useMe().data?.data.preferredUnit ?? "kg";
   const bulkDelete = useBulkDeleteWorkouts();
+  // The search field types instantly but only commits to the URL (and the
+  // server query) once typing settles, so each keystroke isn't a navigation.
+  const [searchInput, setSearchInput] = useState(filters.search ?? "");
+  const debouncedHistorySearch = useDebouncedValue(searchInput);
+  useEffect(() => {
+    const next = debouncedHistorySearch || undefined;
+    if (next === filters.search) return;
+    setSelected(new Map());
+    void navigate({
+      search: (previous) => ({ ...previous, search: next, page: 1 }),
+      replace: true,
+      resetScroll: false,
+    });
+  }, [debouncedHistorySearch, filters.search, navigate]);
+  useEffect(() => {
+    setSearchInput(filters.search ?? "");
+  }, [filters.search]);
   const [selecting, setSelecting] = useState(false);
   const [selected, setSelected] = useState<Map<number, MyWorkoutSummary>>(
     () => new Map(),
@@ -247,12 +265,10 @@ function HistoryPage() {
               <SearchBar
                 aria-label="Search workouts"
                 placeholder="Search workout names…"
-                value={filters.search ?? ""}
+                value={searchInput}
                 maxLength={120}
                 disabled={bulkDelete.isPending}
-                onValueChange={(search) =>
-                  updateFilters({ search: search || undefined })
-                }
+                onValueChange={setSearchInput}
               />
               <ScrollArea orientation="horizontal" className="w-full">
                 <div className="flex w-max gap-2 pb-2">

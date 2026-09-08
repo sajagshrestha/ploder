@@ -43,6 +43,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import {
   type Exercise,
   useCreateExercise,
@@ -121,9 +122,10 @@ function AdminExercises() {
   const [deleting, setDeleting] = useState<Exercise | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
 
+  const debouncedSearch = useDebouncedValue(search);
   const { data, isPending } = useExercises({
     page,
-    search: search || undefined,
+    search: debouncedSearch || undefined,
     muscleGroup: muscleGroup || undefined,
     equipment: equipment || undefined,
   });
